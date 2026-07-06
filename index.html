@@ -15,7 +15,9 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<script src="https://unpkg.com/georaster"></script>
+<script src="https://unpkg.com/georaster"></script> 
+    
+<script src="https://unpkg.com/geoblaze"></script>
 
 <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
 
@@ -24,14 +26,25 @@
 </head>
 
 <body>
-
+    
+    <div id="header">
+    <img src="download.png" alt="download" id="download"> 
+    <span id="title">Brent River Park</span>
+    </div>
+    
 <div id="container">
 
     <div id="map"></div>
 
     <div id="sidebar">
-
-        <h1>GIS Dashboard</h1>
+          <div id="feature-info" class="sidebar-row">
+        <h3>About the project</h3>
+        <p>Web-based Geospatial Database to Support 
+Environmental Regeneration in Brent River Park.</p>  
+         <a href="Brent_River_Park.pdf" target="_blank">
+            Open Project Information
+        </a>
+    </div>
 
         <table id="infoTable">
 
