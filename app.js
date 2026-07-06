@@ -1,88 +1,88 @@
-// 1. Initialize the Leaflet Map Engine
-const map = L.map('map').setView([51.0, -0.8], 12);
+// Create Map
 
-// 2. Add an OpenStreetMap Tile Base Layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+const map = L.map("map").setView([51.7, -0.8], 15);
+
+// Base Layer
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+    maxZoom:19,
+    attribution:"© OpenStreetMap"
 }).addTo(map);
 
-/**
- * 3. File Target Pointers
- * Assumes a repository layout of:
- * ├── index.html
- * ├── app.js
- * ├── style.css
- * └── Data/
- *     ├── map.json
- *     └── raster.tif
- * Adjust filenames inside 'Data/' below if your file names are different.
- */
-const geojsonUrl = 'Data/map.json'; 
-const geotiffUrl = 'Data/raster.tif'; 
+let rasterLayer;
+let georaster;
 
-// 4. Async Fetch and Bind GeoJSON Data
-fetch(geojsonUrl)
-    .then(response => {
-        if (!response.ok) throw new Error(`Could not find GeoJSON at ${geojsonUrl}`);
-        return response.json();
-    })
-    .then(geojsonData => {
-        const geojsonLayer = L.geoJSON(geojsonData, {
-            style: {
-                color: "#0d6efd",
-                weight: 2,
-                opacity: 0.8
-            },
-            onEachFeature: (feature, layer) => {
-                // Click events map vector properties back to left HTML panel 
-                layer.on('click', () => {
-                    document.getElementById('json-info').innerHTML = `
-                        <p><strong>Feature Properties:</strong></p>
-                        <pre>${JSON.stringify(feature.properties, null, 2)}</pre>
-                    `;
-                });
-            }
-        }).addTo(map);
-        
-        // Autoreframe camera viewport to fit vector bounds
-        map.fitBounds(geojsonLayer.getBounds());
-    })
-    .catch(err => {
-        console.error(err.message);
-        document.getElementById('json-info').innerHTML = `<span style="color:red;">Error loading GeoJSON: Verify file exists at "${geojsonUrl}"</span>`;
+// Load GeoTIFF from GitHub repository
+
+fetch("Data/Image_Landsat_2026_LST_catchment_wgs84.tif")
+
+.then(response=>response.arrayBuffer())
+
+.then(arrayBuffer=>parseGeoraster(arrayBuffer))
+
+.then(raster=>{
+
+    georaster=raster;
+
+    rasterLayer=new GeoRasterLayer({
+
+        georaster:georaster,
+        opacity:0.7
+
     });
 
-// 5. Async Fetch and Decode GeoTIFF Binary Raster Arrays
-fetch(geotiffUrl)
-    .then(response => {
-        if (!response.ok) throw new Error(`Could not find GeoTIFF at ${geotiffUrl}`);
-        return response.arrayBuffer();
-    })
-    .then(arrayBuffer => parseGeoraster(arrayBuffer))
-    .then(georaster => {
-        // Output raw data profile into left informational container
-        document.getElementById('tiff-info').innerHTML = `
-            <p><strong>Width:</strong> ${georaster.width} px</p>
-            <p><strong>Height:</strong> ${georaster.height} px</p>
-            <p><strong>NoData Value:</strong> ${georaster.noDataValue}</p>
-            <p><strong>Bands Available:</strong> ${georaster.numberOfRasters}</p>
-        `;
+    rasterLayer.addTo(map);
 
-        // Instantiate custom raster layer on Leaflet engine Canvas
-        const layer = new GeoRasterLayer({
-            georaster: georaster,
-            opacity: 0.7,
-            resolution: 64 // Controls pixel crispness vs rendering speed
-        });
-        layer.addTo(map);
-        
-        // Recenter camera viewport to scale layout bounds around raster footprint
-        // Using setTimeout to prevent race conditions if both layers zoom simultaneously
-        setTimeout(() => {
-            map.fitBounds(layer.getBounds());
-        }, 200);
-    })
-    .catch(error => {
-        console.error(error.message);
-        document.getElementById('tiff-info').innerHTML = `<span style="color:red;">Error parsing GeoTIFF: Verify file exists at "${geotiffUrl}"</span>`;
-    });
+    map.fitBounds(rasterLayer.getBounds());
+
+});
+
+// Mouse Click
+
+map.on("click",function(e){
+
+    document.getElementById("lat").innerHTML=e.latlng.lat.toFixed(6);
+
+    document.getElementById("lng").innerHTML=e.latlng.lng.toFixed(6);
+
+    if(!georaster) return;
+
+    const value=getRasterValue(e.latlng);
+
+    document.getElementById("value").innerHTML=value;
+
+});
+
+
+// Read Raster Value
+
+function getRasterValue(latlng){
+
+    const xmin=georaster.xmin;
+    const ymax=georaster.ymax;
+
+    const pixelWidth=georaster.pixelWidth;
+    const pixelHeight=georaster.pixelHeight;
+
+    const x=Math.floor((latlng.lng-xmin)/pixelWidth);
+
+    const y=Math.floor((ymax-latlng.lat)/pixelHeight);
+
+    if(
+        x<0 ||
+        y<0 ||
+        x>=georaster.width ||
+        y>=georaster.height
+    ){
+
+        return "Outside Raster";
+
+    }
+
+    const value=georaster.values[0][y][x];
+
+    return value;
+
+}
