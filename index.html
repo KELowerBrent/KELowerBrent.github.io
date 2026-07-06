@@ -1,23 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>WebGIS Dashboard</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-layers-expanded@1.0.0/dist/leaflet-control-layers-expanded.css"/>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/georaster"></script>
+
+<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
 <body>
+
 <div id="container">
 
     <div id="map"></div>
 
     <div id="sidebar">
 
-        <h2>Raster Information</h2>
+        <h1>GIS Dashboard</h1>
 
         <table id="infoTable">
-            <tr><th>Latitude</th><td id="lat"></td></tr>
-            <tr><th>Longitude</th><td id="lon"></td></tr>
-            <tr><th>LULC</th><td id="lulc"></td></tr>
-            <tr><th>NDVI</th><td id="ndvi"></td></tr>
-            <tr><th>LST</th><td id="lst"></td></tr>
+
+            <tr>
+                <th>Latitude</th>
+                <td id="lat">-</td>
+            </tr>
+
+            <tr>
+                <th>Longitude</th>
+                <td id="lon">-</td>
+            </tr>
+
+            <tr>
+                <th>Land Cover</th>
+                <td id="lulc">-</td>
+            </tr>
+
+            <tr>
+                <th>NDVI</th>
+                <td id="ndvi">-</td>
+            </tr>
+
+            <tr>
+                <th>LST (°C)</th>
+                <td id="lst">-</td>
+            </tr>
+
         </table>
 
-        <div id="chart"></div>
+        <div class="chart-container">
+
+            <canvas id="chart"></canvas>
+
+        </div>
+
+        <div id="legend">
+
+            <h2>Layers</h2>
+
+            <p>
+            ✓ LULC<br>
+            ✓ NDVI<br>
+            ✓ LST
+            </p>
+
+        </div>
 
     </div>
 
 </div>
+
+<script src="app.js"></script>
+
 </body>
+</html>
