@@ -63,6 +63,26 @@ const chart = new Chart(ctx, {
     }
 });
 
+fetch('./Data/London_Ward_json.geojson')
+  .then(response => response.json())
+  .then(data => {
+
+    L.geoJSON(data, {
+      style: {
+        color: '#3388ff',
+        weight: 2
+      },
+      onEachFeature: function(feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(
+            `<b>${feature.properties.name}</b>`
+          );
+        }
+      }
+    }).addTo(map);
+
+  })
+  .catch(error => console.error('Error loading GeoJSON:', error));
 // =========================
 // LOAD GEOTIFF FILES
 // =========================
