@@ -1,45 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet Dual Column App</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com" />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css" />
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Leaflet Raster Viewer</title>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
 
-    <div class="app-container">
-        <!-- Left Section: Information Panel (60%) -->
-        <section class="info-column">
-            <h2>Data Information Panel</h2>
-            
-            <div class="data-card">
-                <h3>GeoTIFF Metadata</h3>
-                <div id="tiff-info">Loading GeoTIFF metrics...</div>
-            </div>
+<div id="container">
 
-            <div class="data-card">
-                <h3>GeoJSON Properties</h3>
-                <div id="json-info">Click a vector feature on the map to see details.</div>
-            </div>
-        </section>
+    <div id="map"></div>
 
-        <!-- Right Section: Map Layout (40%) -->
-        <section class="map-column">
-            <div id="map"></div>
-        </section>
+    <div id="info">
+
+        <h2>Raster Information</h2>
+
+        <table>
+
+            <tr>
+                <td>Latitude</td>
+                <td id="lat">-</td>
+            </tr>
+
+            <tr>
+                <td>Longitude</td>
+                <td id="lng">-</td>
+            </tr>
+
+            <tr>
+                <td>Raster Value</td>
+                <td id="value">-</td>
+            </tr>
+
+        </table>
+
     </div>
 
-    <!-- Leaflet Engine JS -->
-    <script src="https://unpkg.com"></script>
-    <!-- Dependencies for parsing GeoTIFF rasters in client browser -->
-    <script src="https://unpkg.com"></script>
-    <script src="https://unpkg.com-layer-for-leaflet"></script>
-    <!-- Core Application Logic -->
-    <script src="app.js"></script>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/georaster/dist/georaster.browserify.min.js"></script>
+
+<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+
+<script src="app.js"></script>
+
 </body>
 </html>
