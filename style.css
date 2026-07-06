@@ -14,7 +14,7 @@ body {
 #header {
   height: 50px;
   background: #7FFFD4;
-  color: #0047AB;
+  color: blue;
   display: flex;
   align-items: center;
   justify-content: center;
