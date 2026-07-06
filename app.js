@@ -37,6 +37,8 @@ var baseMaps = {
     "CartoDB Light": cartoLight,
     "Esri Satellite": satellite
 };
+
+var overlayMaps = {}; 
 // Add structural toggle control to the map
 L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
 
@@ -90,17 +92,17 @@ fetch('./Data/London_Ward_json.geojson')
 async function loadRasters() {
 
     // LULC
-    // const lulcResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
-    // const lulcArrayBuffer = await lulcResponse.arrayBuffer();
-    // lulcRaster = await parseGeoraster(lulcArrayBuffer);
+    const lulcResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
+    const lulcArrayBuffer = await lulcResponse.arrayBuffer();
+    lulcRaster = await parseGeoraster(lulcArrayBuffer);
 
     // NDVI
-    // const ndviResponse = await fetch("data/NDVI.tif");
-    // const ndviArrayBuffer = await ndviResponse.arrayBuffer();
-    // ndviRaster = await parseGeoraster(ndviArrayBuffer);
+    const ndviResponse = await fetch("data/NDVI.tif");
+    const ndviArrayBuffer = await ndviResponse.arrayBuffer();
+    ndviRaster = await parseGeoraster(ndviArrayBuffer);
 
     // LST
-    const lstResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif.tif");
+    const lstResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
     const lstArrayBuffer = await lstResponse.arrayBuffer();
     lstRaster = await parseGeoraster(lstArrayBuffer);
 
