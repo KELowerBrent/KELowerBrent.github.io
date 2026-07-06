@@ -1,150 +1,184 @@
-/* Document Global Resets */
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #fdfdfd;
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
 
-/* Flexbox Header Structure (fixes logo squeeze) */
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  /* Allows normal scrolling on mobile instead of hiding clipped content */
+  overflow: auto; 
+}
+
+/* HEADER */
 #header {
-    height: 70px;
-    background: #ffffff;
-    color: #333333;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    border-bottom: 2px solid #e2e8f0;
-    box-sizing: border-box;
+  height: 50px;
+  background: #A5D6A7; /* Adjusted from light cyan to match table headers for professional contrast */
+  color: cobalt blue; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: clamp(18px, 4vw, 26px); /* Fluid typography: shrinks on mobile, grows on desktop */
+  font-weight: bold;
+  flex-shrink: 0;
+  padding: 0 15px;
 }
 
 #download {
-    height: 50px;
-    width: auto;
-    object-fit: contain;
-    margin-right: 20px;
+  position: absolute;
+  left: 10px;
+  height: 36px; /* Reduced from 50px to prevent overflow clipping within a 50px header */
+  top: 7px;
 }
 
-#title {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1a202c;
-    letter-spacing: -0.5px;
+/* MAIN LAYOUT (Mobile First Default) */
+#container {
+  display: flex;
+  flex-direction: column; /* Stack vertically on small screens */
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
 
-/* Master Layout Framework */
-#dashboard-container {
-    display: flex;
-    height: calc(100vh - 70px);
-    width: 100vw;
-    overflow: hidden;
-}
-
-/* Container 1: Elastic Map Viewport */
+/* MAP SIDE */
 #map {
+  width: 100%;
+  height: 45vh; /* Takes up 45% of screen height on mobile */
+  position: relative;
+  flex-shrink: 0;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* COORDINATES BOX */
+#coords {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.75); /* Darkened slightly for better readability against bright map layers */
+  color: white;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 3px;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+/* SIDEBAR (Mobile Layout) */
+#sidebar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #aeabab;
+  flex: 1;
+}
+
+.sidebar-row {
+  padding: 12px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.sidebar-row:last-child {
+  border-bottom: none;
+}
+
+.sidebar-row h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+}
+
+/* TABLES & DATA INTERFACES */
+#lst-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+#lst-table th,
+#lst-table td {
+  border: 1px solid #ccc;
+  padding: 8px 6px;
+  font-size: 12px;
+}
+
+#lst-table th {
+  background: #0F7776;
+  color: white;
+}
+
+#lst-table tr:nth-child(even) {
+  background: #f5f5f5;
+}
+
+/* CHART CONTAINER */
+.chart-wrap {
+  width: 100%;
+  height: 200px; /* Explicit height constraint for mobile */
+  position: relative;
+}
+
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* CONTENT PANELS SPECIFICS */
+#feature-info {
+  overflow-y: auto;
+}
+
+
+/* ============================================================ */
+/* DESKTOP RESPONSIVE LAYOUT (Screens wider than 768px)          */
+/* ============================================================ */
+@media screen and (min-width: 768px) {
+  body {
+    overflow: hidden; /* Lock the viewport to avoid dual scrollbars */
+  }
+
+  #container {
+    flex-direction: row; /* Split screen side-by-side */
+    height: calc(100vh - 50px);
+  }
+
+  #map {
+    flex: 1.2; /* Map takes up slightly more space than sidebar */
+    height: 100%;
+  }
+
+  #sidebar {
     flex: 1;
     height: 100%;
-    min-height: 100%;
-    background: #111111; /* Dark theme default fallback background */
-}
+    min-width: 320px; /* Prevents layout collapse if desktop screen shrinks */
+    max-width: 450px; /* Keeps sidebar from becoming aggressively wide on ultrawide monitors */
+    border-left: 1px solid #ccc;
+    overflow: hidden;
+  }
 
-/* Container 2: Locked Legend Panel */
-#legend-container {
-    width: 180px;
-    min-width: 180px;
-    background: #f8fafc;
-    border-left: 1px solid #e2e8f0;
-    padding: 20px 15px;
-    box-sizing: border-box;
-    overflow-y: auto;
-}
+  .sidebar-row {
+    flex: 1;
+    overflow-y: auto; /* Independent panel scrolling if content is long */
+  }
 
-#legend-container h2 {
-    font-size: 16px;
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #4a5568;
-    border-bottom: 1px solid #cbd5e1;
-    padding-bottom: 5px;
-}
+  /* Specific Flex-basis distribution for panels */
+  #feature-info { flex: 0.8; }
+  #borough-panel { flex: 2; }
+  #ward-panel    { flex: 2; }
 
-.legend-items p {
-    margin: 8px 0;
-    font-size: 14px;
-    color: #2d3748;
-    font-weight: 500;
-}
-
-/* Container 3: Locked Information Panel */
-#info-panel-container {
-    width: 360px;
-    min-width: 360px;
-    background: #ffffff;
-    border-left: 1px solid #e2e8f0;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* Project Info Styling */
-#feature-info h3 {
-    margin-top: 0;
-    font-size: 18px;
-    color: #1a202c;
-}
-
-#feature-info p {
-    font-size: 14px;
-    color: #718096;
-    line-height: 1.5;
-}
-
-.project-link {
-    display: inline-block;
-    color: #3182ce;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.project-link:hover {
-    text-decoration: underline;
-}
-
-/* Information Table Presentation */
-#infoTable {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-#infoTable th, #infoTable td {
-    padding: 10px 12px;
-    border: 1px solid #e2e8f0;
-    text-align: left;
-}
-
-#infoTable th {
-    background-color: #f7fafc;
-    color: #4a5568;
-    width: 40%;
-    font-weight: 600;
-}
-
-#infoTable td {
-    color: #1a202c;
-}
-
-/* Graphic Canvas Restraints */
-.chart-container {
-    position: relative;
-    width: 100%;
-    height: 260px;
-    margin-top: auto; /* Pushes the graph panel towards the bottom layout zone */
+  .chart-wrap {
+    height: calc(100% - 25px); /* Let Chart dynamically fill panel space on desktop */
+  }
 }
