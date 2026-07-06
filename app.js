@@ -1,214 +1,469 @@
-// =========================
-// 1. INITIALIZE MAP ENGINE (IMMEDIATE)
-// =========================
+// Initialize the map centered on London
+const map = L.map('map').setView([51.5, -0.12], 10);
+//add scale bar
+L.control.scale({ position: 'bottomright', metric:true, imperial:false, maxWidth: 200 }).addTo(map);    
 
-// Center view coordinates directly over Brent River Park, West London
-const map = L.map("map").setView([51.515, -0.34], 12);
+var coordsDiv = document.getElementById("coords");
 
-L.control.scale({ position: 'bottomright', metric: true, imperial: false, maxWidth: 200 }).addTo(map);  
+map.on("mousemove", function (e) {
+    var lat = e.latlng.lat.toFixed(5);
+    var lng = e.latlng.lng.toFixed(5);
 
-// Standard OpenStreetMap Tile Layer - Instantly added to prevent blank canvas
-const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors"
-}).addTo(map); // <--- Added directly to ensure immediate visual feedback
+    coordsDiv.innerHTML = "Lat: " + lat + " | Lng: " + lng;
+});
 
-const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+// ==========================================
+// 1. BASE LAYERS
+// ==========================================
+var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+});
+
+var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
     attribution: '&copy; OpenTopoMap contributors'
 });
 
-const cartoLight = L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; CARTO'
+var cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com">CARTO</a>'
 });
 
-const dark = L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
+var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; Esri'
+})
+//.addTo(map); // Set default active base layer
+
+var dark = L.tileLayer(
+'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
+{
     attribution: '&copy; CARTO'
+}).addTo(map);
+
+// ==========================================
+// 2. WMS OVERLAY LAYERS (GeoServer)
+// ==========================================
+var geoserverUrl = 'http://localhost:8081/geoserver/test_1_KE_Brent/wms';
+
+var River_Water_Body = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:River_Water_Body',
+    format: 'image/png',
+    transparent: true
 });
 
-const baseMaps = {
-    "OpenStreetMap": osm,
-    "Dark Theme Map": dark,
-    "OpenTopoMap": topo,
-    "CartoDB Light": cartoLight
-};
+var Lake_Water_Body = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:Lake_Water_Body',
+    format: 'image/png',
+    transparent: true
+});
 
-// Global Layer Control variable placed on the map structural canvas
-const layerControl = L.control.layers(baseMaps, null, { collapsed: true, position: 'bottomleft' }).addTo(map);
+var River_Water_Body_Catchment = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:River_Water_Body_Catchment',
+    format: 'image/png',
+    transparent: true
+});
 
-// Vector Overlay Storage Paths
-const geoJsonFiles = [
-    { path: './Data/London_Ward_json.geojson', color: '#3388ff', label: 'Ward' },
-    { path: './Data/London_Boroughs.geojson', color: '#ff5533', label: 'Borough' },
-    { path: './Data/Lower_brent_river.geojson', color: '#2ecc71', label: 'Lower Brent River' },
-    { path: './Data/Lower_brent_river_catchment.geojson', color: '#9b59b6', label: 'Catchment' }
-];
+var Lower_brent_river_catchment= L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:Lower_brent_river_catchment',
+    format: 'image/png',
+    transparent: true
+}); 
 
-// Async execution pipeline processing vector layouts
-const fetchPromises = geoJsonFiles.map(file => 
-    fetch(file.path)
-        .then(res => {
-            if (!res.ok) throw new Error(`Network failure resolving: ${file.path}`);
-            return res.json();
-        })
-        .catch(err => {
-            console.warn(`Vector layer skipped: ${file.path}. Check if file exists.`, err);
-            return null; // Don't break the promise chain if one file is missing
-        })
+var Lower_brent_river = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:Lower_brent_river',
+    format: 'image/png',
+    transparent: true
+}); 
+
+var Surface_Water_Operational_Catchment = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:Surface_Water_Operational_Catchment',
+    format: 'image/png',
+    transparent: true
+});
+
+var London_Ward = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:London_Ward_NDVI',
+    format: 'image/png',
+    transparent: true
+});
+
+var London_Borough = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:London_Borough_NDVI',
+    format: 'image/png',
+    transparent: true
+});
+
+var landuse = L.tileLayer.wms(geoserverUrl, {
+    layers: 'test_1_KE_Brent:gis_osm_landuse',
+    format: 'image/png',
+    transparent: true
+});
+
+var lst2016 = L.tileLayer.wms(
+    "http://localhost:8081/geoserver/Lower_BrentRiver_raster/wms",
+    {
+        layers:"Lower_BrentRiver_raster:Image_Landsat_2016_LST_catchment",
+        format:"image/png",
+        transparent:true
+    }
 );
 
-Promise.all(fetchPromises)
-    .then(datasets => {
-        datasets.forEach((data, index) => {
-            if (!data) return; // Skip failed fetches
-            const config = geoJsonFiles[index];
-            const vectorLayer = L.geoJSON(data, {
-                style: { color: config.color, weight: 2, fillOpacity: 0.1 },
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties) {
-                        const name = feature.properties.name || feature.properties.NAME || 'Unknown Region';
-                        layer.bindPopup(`<b>${config.label}:</b> ${name}`);
-                    }
-                }
-            }).addTo(map);
-            
-            layerControl.addOverlay(vectorLayer, config.label);
-        });
-    })
-    .catch(error => console.error('Error compiling external Vector layers: ', error));
+var lst2026 = L.tileLayer.wms(
+    "http://localhost:8081/geoserver/Lower_BrentRiver_raster/wms",
+    {
+        layers:"Lower_BrentRiver_raster:Image_Landsat_2026_LST_catchment",
+        format:"image/png",
+        transparent:true
+    }
+);
 
-// =========================
-// 2. RASTER INITIALIZATION & CHART SETUP
-// =========================
+//Load default active overlays
+River_Water_Body.addTo(map);
+Lake_Water_Body.addTo(map);
+River_Water_Body_Catchment.addTo(map);
+Surface_Water_Operational_Catchment.addTo(map);
+London_Ward.addTo(map);
+London_Borough.addTo(map);
 
-let lulcRaster = null, ndviRaster = null, lstRaster = null;
-let lulcLayer = null, ndviLayer = null, lstLayer = null;
+// ==========================================
+// 3. LAYER CONTROL INTERFACE
+// ==========================================
+// Grouping your background base maps
+var baseMaps = {
+    "OpenStreetMap": osm,
+    "OpenTopoMap": topo,
+    "CartoDB Light": cartoLight,
+    "Esri Satellite": satellite
+};
 
-const ctx = document.getElementById("chart");
+// Grouping your data overlays
+var overlayMaps = {
+    "London Borough": London_Borough,
+    "London Ward": London_Ward,
+    "Surface Water Operational Catchment": Surface_Water_Operational_Catchment,
+    "River Water Body Catchment": River_Water_Body_Catchment,
+    "Lake Water Body": Lake_Water_Body,
+    "River Water Body": River_Water_Body,
+    "Landuse": landuse,
+   "Lower Brent River Catchment": Lower_brent_river_catchment,
+    "Lower Brent River": Lower_brent_river,
+    "LST 2016": lst2016,
+    "LST 2026": lst2026
 
-const chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-        labels: ["LULC", "NDVI", "LST"],
-        datasets: [{
-            label: "Pixel Analysis Readings",
-            data: [0, 0, 0], // Safe initialization array
-            backgroundColor: ["#3182ce", "#2ecc71", "#e53e3e"]
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: { beginAtZero: true }
+};
+
+// Add structural toggle control to the map
+L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
+
+// Show Boroughs when zoomed out, Wards when zoomed in
+var wardZoomLevel = 12;
+map.on('zoomend', function () {
+
+    var currentZoom = map.getZoom();
+
+    if (currentZoom >= wardZoomLevel) {
+
+        // Remove Borough layer
+        if (map.hasLayer(London_Borough)) {
+            map.removeLayer(London_Borough);
+        }
+
+        // Add Ward layer
+        if (!map.hasLayer(London_Ward)) {
+            map.addLayer(London_Ward);
+        }
+
+    } else {
+
+        // Remove Ward layer
+        if (map.hasLayer(London_Ward)) {
+            map.removeLayer(London_Ward);
+        }
+
+        // Add Borough layer
+        if (!map.hasLayer(London_Borough)) {
+            map.addLayer(London_Borough);
         }
     }
+
 });
 
-// =========================
-// 3. LOAD GEOTIFF ENGINE ARCHITECTURE (DEFERRED ASYNC)
-// =========================
+//chart
+fetch(
+    "http://localhost:8081/geoserver/test_1_KE_Brent/ows?" +
+    "service=WFS&version=1.0.0&request=GetFeature" +
+    "&typeName=test_1_KE_Brent:London_Borough" +
+    "&outputFormat=application/json"
+)
+.then(res => res.json())
+.then(data => {
 
-async function loadRasters() {
-    try {
-        // Fetch LULC
-        const lulcResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
-        if (!lulcResponse.ok) throw new Error("LULC GeoTIFF file not found");
-        const lulcArrayBuffer = await lulcResponse.arrayBuffer();
-        lulcRaster = await parseGeoraster(lulcArrayBuffer);
+    let boroughNames = [];
+    let boroughAreas = [];
 
-        // Fetch NDVI
-        const ndviResponse = await fetch("Data/NDVI.tif");
-        if (!ndviResponse.ok) throw new Error("NDVI GeoTIFF file not found");
-        const ndviArrayBuffer = await ndviResponse.arrayBuffer();
-        ndviRaster = await parseGeoraster(ndviArrayBuffer);
+    data.features.forEach(f => {
 
-        // Fetch LST
-        const lstResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
-        if (!lstResponse.ok) throw new Error("LST GeoTIFF file not found");
-        const lstArrayBuffer = await lstResponse.arrayBuffer();
-        lstRaster = await parseGeoraster(lstArrayBuffer);
+        let name = f.properties.NAME;
+        let area = f.properties.HECTARES;
 
-        // Check if the external constructor plugin exists in global window memory space
-        if (typeof GeoRasterLayer !== "undefined") {
-            lulcLayer = new GeoRasterLayer({ georaster: lulcRaster, opacity: 0.5, resolution: 256 });
-            ndviLayer = new GeoRasterLayer({ georaster: ndviRaster, opacity: 0.5, resolution: 256 });
-            lstLayer = new GeoRasterLayer({ georaster: lstRaster, opacity: 0.5, resolution: 256 });
-
-            layerControl.addOverlay(lulcLayer, "Raster Map: LULC");
-            layerControl.addOverlay(ndviLayer, "Raster Map: NDVI");
-            layerControl.addOverlay(lstLayer, "Raster Map: LST");
-
-            // Set LULC checked by default
-            lulcLayer.addTo(map);
-            setupLegendToggles();
-        } else {
-            console.error("GeoRasterLayer engine missing. Verify scripts in index.html");
+        // safety check (IMPORTANT FIX)
+        if (name && area !== null && area !== undefined) {
+            boroughNames.push(name);
+            boroughAreas.push(area);
         }
+    });
 
-    } catch (err) {
-        console.error("Raster Engine deferred initialization note: ", err.message);
-        // Map continues displaying base imagery safely even if local files fail to load
+    const ctx = document.getElementById("boroughChart");
+
+    if (!ctx) {
+        console.error("Chart canvas not found!");
+        return;
     }
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: boroughNames,
+            datasets: [{
+                label: "Area (Hectares)",
+                data: boroughAreas,
+                backgroundColor: "Blue"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+    padding: {
+      top: 10,
+      right: 20,
+      bottom: 20,
+      left: 10
+    }
+  },
+            plugins: {
+                legend: { display: true }
+            },
+            scales: {
+    x: {
+      ticks: {
+        font: {
+          size: 10
+        }
+      }
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: {
+          size: 10
+        }
+      }
+    }
+  }
+}
+    });
+
+});
+
+// WARD CHART
+fetch("http://localhost:8081/geoserver/test_1_KE_Brent/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=test_1_KE_Brent:London_Ward_NDVI&outputFormat=application/json")
+  .then(res => res.json())
+  .then(data => {
+    let wardNames = [];
+    let wardAreas = [];
+
+    data.features.forEach(f => {
+      let name = f.properties.BOROUGH;
+      let area = f.properties._mean;
+      if (name && area !== null && area !== undefined) {
+        wardNames.push(name);
+        wardAreas.push(area);
+      }
+    });
+
+    var ctx = document.getElementById("wardChart");
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: wardNames,
+        datasets: [{
+          label: "Measure of Greenness (NDVI)",
+          data: wardAreas,
+          backgroundColor: "Green"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+         layout: {
+    padding: {
+      top: 10,
+      right: 20,
+      bottom: 20,
+      left: 10
+    }
+  },
+        plugins: {
+          legend: { display: true }
+        },
+        scales: {
+    x: {
+      ticks: {
+        font: {
+          size: 10
+        }
+      }
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        font: {
+          size: 10
+        }
+      }
+    }
+  }
+}
+    });
+  });
+
+
+
+function getFeatureInfoUrl(map, layer, latlng){
+
+    var point =
+        map.latLngToContainerPoint(
+            latlng,
+            map.getZoom()
+        );
+
+    var size = map.getSize();
+
+    var params = {
+        request:'GetFeatureInfo',
+        service:'WMS',
+        srs:'EPSG:32630',
+        styles:'',
+        transparent:true,
+        version:'1.1.1',
+        format:'image/png',
+        bbox:map.getBounds().toBBoxString(),
+        height:size.y,
+        width:size.x,
+        layers:layer.options.layers,
+        query_layers:layer.options.layers,
+        info_format:'application/json',
+        x:Math.round(point.x),
+        y:Math.round(point.y)
+    };
+
+    return layer._url +
+           L.Util.getParamString(
+               params,
+               layer._url,
+               true
+           );
 }
 
-function getPixelValue(raster, lat, lng) {
-    if (!raster || typeof geoblaze === "undefined") return null;
-    try {
-        const val = geoblaze.identify(raster, [lng, lat]);
-        if (Array.isArray(val)) {
-            return (val[0] !== null && !isNaN(val[0])) ? val[0] : null;
+async function getLSTValue(layer, latlng){
+
+     try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+            return data.features[0].properties.GRAY_INDEX;
         }
-        return (val !== null && !isNaN(val)) ? val : null;
-    } catch (e) {
+
+        return null;
+    } catch (err) {
+        console.error(err);
         return null;
     }
 }
 
-function setupLegendToggles() {
-    const tLulc = document.getElementById("toggle-lulc");
-    const tNdvi = document.getElementById("toggle-ndvi");
-    const tLst = document.getElementById("toggle-lst");
-
-    if (tLulc && lulcLayer) {
-        tLulc.addEventListener("change", (e) => e.target.checked ? lulcLayer.addTo(map) : map.removeLayer(lulcLayer));
+// =====================================================
+// 9. LST CHART
+// =====================================================
+var lstChart = new Chart(document.getElementById("lstChart"), {
+    type: "bar",
+    data: {
+        labels: ["2016", "2026"],
+        datasets: [{
+            label: "LST (°C)",
+            data: [0, 0],
+            backgroundColor: ["orange", "red"]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
     }
-    if (tNdvi && ndviLayer) {
-        tNdvi.addEventListener("change", (e) => e.target.checked ? ndviLayer.addTo(map) : map.removeLayer(ndviLayer));
-    }
-    if (tLst && lstLayer) {
-        tLst.addEventListener("change", (e) => e.target.checked ? lstLayer.addTo(map) : map.removeLayer(lstLayer));
-    }
-}
-
-// =========================
-// 4. MOUSE INTERACTION TRACKER
-// =========================
-
-map.on("mousemove", function (e) {
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
-
-    document.getElementById("lat").innerText = lat.toFixed(5);
-    document.getElementById("lon").innerText = lng.toFixed(5);
-
-    if (!lulcRaster || !ndviRaster || !lstRaster) return;
-
-    const lulc = getPixelValue(lulcRaster, lat, lng);
-    const ndvi = getPixelValue(ndviRaster, lat, lng);
-    const lst = getPixelValue(lstRaster, lat, lng);
-
-    document.getElementById("lulc").innerText = lulc !== null ? lulc.toFixed(1) : "NoData";
-    document.getElementById("ndvi").innerText = ndvi !== null ? ndvi.toFixed(4) : "NoData";
-    document.getElementById("lst").innerText = lst !== null ? lst.toFixed(1) : "NoData";
-
-    chart.data.datasets[0].data = [
-        lulc !== null ? lulc : 0,
-        ndvi !== null ? ndvi : 0,
-        lst !== null ? lst : 0
-    ];
-
-    chart.update('none');
 });
 
-// Run file processor safely after base map configuration maps are structural
-loadRasters();
+
+map.on('click', async function(e){
+
+    const value2016 =
+        await getLSTValue(
+            lst2016,
+            e.latlng
+        );
+
+    const value2026 =
+        await getLSTValue(
+            lst2026,
+            e.latlng
+        );
+
+    const diff =
+        (value2026 - value2016)
+        .toFixed(1);
+
+    document.getElementById(
+        "lat-value"
+    ).innerText =
+        e.latlng.lat.toFixed(5);
+
+    document.getElementById(
+        "lon-value"
+    ).innerText =
+        e.latlng.lng.toFixed(5);
+
+    document.getElementById(
+        "lst2016-value"
+    ).innerText =
+        value2016 + " °C";
+
+    document.getElementById(
+        "lst2026-value"
+    ).innerText =
+        value2026 + " °C";
+
+    document.getElementById(
+        "lst-difference"
+    ).innerText =
+        (diff > 0 ? "+" : "")
+        + diff + " °C";
+
+    if(diff > 0)
+        document.getElementById(
+            "lst-status"
+        ).innerText =
+            "Warming ▲";
+
+    else
+        document.getElementById(
+            "lst-status"
+        ).innerText =
+            "Cooling ▼";
+
+    lstChart.data.datasets[0].data = [v2016, v2026];
+    lstChart.update();
+});
+
+
+
