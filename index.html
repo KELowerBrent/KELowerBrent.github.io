@@ -1,118 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brent River Park</title>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-
-    <link rel="stylesheet" href="style.css">
+    <title>Leaflet Dual Column App</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <div id="header">
-    <img src="download.png" alt="download" id="download"> 
-    <span id="title">Brent River Park</span>
-    </div>
-
-   <div id="container">
-     <div id="map">
-         <div id="coords"></div>
-    </div>
-
-<div id="sidebar">
-    <div id="feature-info" class="sidebar-row">
-        <h3>About the project</h3>
-        <p>Web-based Geospatial Database to Support 
-Environmental Regeneration in Brent River Park.</p>  
-         <a href="Brent_River_Park.pdf" target="_blank">
-            Open Project Information
-        </a>
-    </div>
-
- <div id="weather-panel" class="sidebar-row panel">
-                <h4>Live Catchment Weather</h4>
-                <div class="weather-grid">
-                    <p class="weather-status"><strong>Status:</strong> <span id="weather-condition">Click map to sample...</span></p>
-                    <div class="weather-metrics">
-                        <p><strong>Temp:</strong> <span id="temperature">--</span></p>
-                        <p><strong>Humidity:</strong> <span id="humidity">--</span></p>
-                        <p><strong>Wind:</strong> <span id="wind-speed">--</span></p>
-                    </div>
-                </div>
-            </div> 
+    <div class="app-container">
+        <!-- Left Section: Information Panel (60%) -->
+        <section class="info-column">
+            <h2>Data Information Panel</h2>
             
-<div id="lst-panel" class="sidebar-row">
+            <div class="data-card">
+                <h3>GeoTIFF Metadata</h3>
+                <div id="tiff-info">Loading GeoTIFF metrics...</div>
+            </div>
 
-    <h4>LST Change Analysis</h4>
+            <div class="data-card">
+                <h3>GeoJSON Properties</h3>
+                <div id="json-info">Click a vector feature on the map to see details.</div>
+            </div>
+        </section>
 
-    <table id="lst-table">
-
-        <tr>
-            <th>Field</th>
-            <th>Value</th>
-        </tr>
-
-        <tr>
-            <td>Latitude</td>
-            <td id="lat-value">--</td>
-        </tr>
-
-        <tr>
-            <td>Longitude</td>
-            <td id="lon-value">--</td>
-        </tr>
-
-        <tr>
-            <td>LST 2016</td>
-            <td id="lst2016-value">--</td>
-        </tr>
-
-        <tr>
-            <td>LST 2026</td>
-            <td id="lst2026-value">--</td>
-        </tr>
-
-        <tr>
-            <td>Difference</td>
-            <td id="lst-difference">--</td>
-        </tr>
-
-        <tr>
-            <td>Status</td>
-            <td id="lst-status">--</td>
-        </tr>
-
-    </table>
-
-    <div class="chart-wrap">
-        <canvas id="lstChart"></canvas>
+        <!-- Right Section: Map Layout (40%) -->
+        <section class="map-column">
+            <div id="map"></div>
+        </section>
     </div>
 
-</div>
-
-
-<div id="borough-panel" class="sidebar-row chart panel">
-    <h4>Borough Information</h4>
-    <div class = "chart-wrap">
-        <canvas id="boroughChart"></canvas>
-    </div>
-</div>
-
-
-<div id="ward-panel" class="sidebar-row chart panel">
-    <h4>Ward Information</h4>
-    <div class = "chart-wrap">
-        <canvas id="wardChart"></canvas>
-    </div>
-</div>
-</div> 
-
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-   
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet Engine JS -->
+    <script src="https://unpkg.com"></script>
+    <!-- Dependencies for parsing GeoTIFF rasters in client browser -->
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com-layer-for-leaflet"></script>
+    <!-- Core Application Logic -->
     <script src="app.js"></script>
 </body>
-</html>  
+</html>
