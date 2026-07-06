@@ -3,11 +3,42 @@
 // =========================
 
 const map = L.map("map").setView([51.7, -0.12], 8);
+//add scale bar
+L.control.scale({ position: 'bottomright', metric:true, imperial:false, maxWidth: 200 }).addTo(map);  
 
 // Base map
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
+});
+
+var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 17,
+    attribution: '&copy; OpenTopoMap contributors'
+});
+
+var cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com">CARTO</a>'
+});
+
+var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; Esri'
+})
+//.addTo(map); // Set default active base layer
+
+var dark = L.tileLayer(
+'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
+{
+    attribution: '&copy; CARTO'
 }).addTo(map);
+
+var baseMaps = {
+    "OpenStreetMap": osm,
+    "OpenTopoMap": topo,
+    "CartoDB Light": cartoLight,
+    "Esri Satellite": satellite
+};
+// Add structural toggle control to the map
+L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
 
 // =========================
 // GLOBAL VARIABLES
