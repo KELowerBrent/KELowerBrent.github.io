@@ -20,7 +20,7 @@ body {
 #header {
   height: 50px;
   background: #0F7776; /* Adjusted from light cyan to match table headers for professional contrast */
-  color: blue;
+  color: cobalt blue; 
   display: flex;
   align-items: center;
   justify-content: center;
