@@ -1,14 +1,82 @@
-#container{
-    display:grid;
-    grid-template-columns:65% 35%;
-    height:100vh;
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
 }
 
-#map{
-    height:100%;
+/* Main split layout */
+#container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
 }
 
-#sidebar{
-    padding:15px;
-    overflow:auto;
+/* Map panel (left side) */
+#map {
+    flex: 2.5;
+    height: 100%;
+}
+
+/* Sidebar (right side) */
+#sidebar {
+    flex: 1;
+    height: 100%;
+    background: #f4f6f8;
+    padding: 15px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border-left: 1px solid #ddd;
+}
+
+/* Headings */
+#sidebar h1 {
+    font-size: 18px;
+    margin: 0 0 10px 0;
+}
+
+#sidebar h2 {
+    font-size: 16px;
+    margin-top: 20px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    font-size: 14px;
+}
+
+th {
+    background: #e9ecef;
+    text-align: left;
+}
+
+/* Chart container */
+.chart-container {
+    margin-top: 20px;
+    background: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+/* Legend */
+#legend {
+    margin-top: 20px;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Make map fill properly in Leaflet */
+.leaflet-container {
+    height: 100%;
+    width: 100%;
 }
