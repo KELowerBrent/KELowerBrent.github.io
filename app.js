@@ -49,7 +49,7 @@ async function loadRasters() {
     // ndviRaster = await parseGeoraster(ndviArrayBuffer);
 
     // LST
-    const lstResponse = await fetch("data/Image_Landsat_2017_LST_catchment.tif.tif");
+    const lstResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif.tif");
     const lstArrayBuffer = await lstResponse.arrayBuffer();
     lstRaster = await parseGeoraster(lstArrayBuffer);
 
