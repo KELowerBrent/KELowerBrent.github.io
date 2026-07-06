@@ -1,5 +1,5 @@
 // Initialize the map centered on London
-var map = L.map('map').setView([51.5, -0.12], 10);
+const map = L.map('map').setView([51.5, -0.12], 10);
 //add scale bar
 L.control.scale({ position: 'bottomright', metric:true, imperial:false, maxWidth: 200 }).addTo(map);    
 
