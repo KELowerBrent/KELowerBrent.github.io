@@ -2,7 +2,7 @@
 // INITIALIZE MAP
 // =========================
 
-const map = L.map("map").setView([51.7, -0.12], 8);
+const map = L.map("map-container").setView([51.7, -0.12], 8);
 //add scale bar
 L.control.scale({ position: 'bottomright', metric:true, imperial:false, maxWidth: 200 }).addTo(map);  
 
