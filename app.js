@@ -1,4 +1,4 @@
-// Create Map
+This is my JS file. Where are you suggesting to add a colour ramp// Create Map
 
 const map = L.map("map").setView([51.7, -0.8], 15);
 
@@ -13,32 +13,6 @@ L.tileLayer(
 
 let rasterLayer;
 let georaster;
-
-function getColor(value){
-
-    let min = georaster.mins[0];
-    let max = georaster.maxs[0];
-
-    let ratio = (value - min) / (max - min);
-
-
-    if(ratio < 0.25){
-        return "blue";
-    }
-
-    else if(ratio < 0.5){
-        return "cyan";
-    }
-
-    else if(ratio < 0.75){
-        return "yellow";
-    }
-
-    else{
-        return "red";
-    }
-
-}
 
 // Load GeoTIFF from GitHub repository
 
@@ -59,31 +33,10 @@ fetch("Data/Image_Landsat_2017_LST_catchment.tif")
 
     });
 
-     pixelValuesToColorFn:function(values){
-
-            let value = values[0];
-
-
-            // Hide NoData pixels
-
-            if(value === georaster.noDataValue){
-
-                return null;
-
-            }
-
-
-            return getColor(value);
-
-        }
-
-    });
-
-
     rasterLayer.addTo(map);
 
     map.fitBounds(rasterLayer.getBounds());
-    addLegend();
+
 });
 
 // Mouse Click
@@ -131,43 +84,5 @@ function getRasterValue(latlng){
     const value=georaster.values[0][y][x];
 
     return value;
-
-}
-
-function addLegend(){
-
-    const legend = L.control({
-        position:"bottomright"
-    });
-
-
-    legend.onAdd=function(){
-
-        const div=L.DomUtil.create(
-            "div",
-            "gradient-legend"
-        );
-
-
-        div.innerHTML=`
-
-        <b>Land Surface Temperature</b>
-
-        <div class="gradient-bar"></div>
-
-        <div class="labels">
-            <span>${georaster.mins[0].toFixed(1)}</span>
-            <span>${georaster.maxs[0].toFixed(1)}</span>
-        </div>
-
-        `;
-
-
-        return div;
-
-    };
-
-
-    legend.addTo(map);
 
 }
