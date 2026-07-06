@@ -1,4 +1,4 @@
-This is my JS file. Where are you suggesting to add a colour ramp// Create Map
+// Create Map
 
 const map = L.map("map").setView([51.7, -0.8], 15);
 
