@@ -42,6 +42,68 @@ var overlayMaps = {};
 // Add structural toggle control to the map
 L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
 
+// 1. Define your file paths and styling configurations
+const geoJsonFiles = [
+  { path: './Data/London_Ward_json.geojson', color: '#3388ff', label: 'Ward' },
+  { path: './Data/London_Boroughs.geojson', color: '#ff5533', label: 'Borough' },
+  { path: './Data/Lower_brent_river.geojson', color: '#2ecc71', label: 'Lower Brent River' },
+    { path: './Data/Lower_brent_river_catchment.geojson', color: '#2ecc71', label: 'Catchment' }, 
+];
+
+// 2. Map paths to fetch promises
+const fetchPromises = geoJsonFiles.map(file => 
+  fetch(file.path).then(res => {
+    if (!res.ok) throw new Error(`Failed to load ${file.path}`);
+    return res.json();
+  })
+);
+
+// 3. Process all files together
+Promise.all(fetchPromises)
+  .then(datasets => {
+    datasets.forEach((data, index) => {
+      const config = geoJsonFiles[index];
+
+      // 4. Create and add each layer
+      L.geoJSON(data, {
+        style: {
+          color: config.color,
+          weight: 2,
+          fillOpacity: 0.2
+        },
+        onEachFeature: function(feature, layer) {
+          if (feature.properties) {
+            // Dynamically look for common name fields
+            const name = feature.properties.name || feature.properties.NAME || 'Unknown';
+            layer.bindPopup(`<b>${config.label}:</b> ${name}`);
+          }
+        }
+      }).addTo(map);
+    });
+  })
+  .catch(error => console.error('Error loading multiple GeoJSON files:', error));
+
+fetch('./Data/London_Ward_json.geojson')
+  .then(response => response.json())
+  .then(data => {
+
+    L.geoJSON(data, {
+      style: {
+        color: '#3388ff',
+        weight: 2
+      },
+      onEachFeature: function(feature, layer) {
+        if (feature.properties) {
+          layer.bindPopup(
+            `<b>${feature.properties.name}</b>`
+          );
+        }
+      }
+    }).addTo(map);
+
+  })
+  .catch(error => console.error('Error loading GeoJSON:', error));
+
 // =========================
 // GLOBAL VARIABLES
 // =========================
@@ -65,26 +127,7 @@ const chart = new Chart(ctx, {
     }
 });
 
-fetch('./Data/London_Ward_json.geojson')
-  .then(response => response.json())
-  .then(data => {
 
-    L.geoJSON(data, {
-      style: {
-        color: '#3388ff',
-        weight: 2
-      },
-      onEachFeature: function(feature, layer) {
-        if (feature.properties) {
-          layer.bindPopup(
-            `<b>${feature.properties.name}</b>`
-          );
-        }
-      }
-    }).addTo(map);
-
-  })
-  .catch(error => console.error('Error loading GeoJSON:', error));
 // =========================
 // LOAD GEOTIFF FILES
 // =========================
