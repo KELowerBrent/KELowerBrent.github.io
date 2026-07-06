@@ -4,6 +4,20 @@ html, body {
     height: 100%;
     font-family: Arial, sans-serif;
 }
+/* HEADER */
+#header {
+  height: 50px;
+  background: #A5D6A7; /* Adjusted from light cyan to match table headers for professional contrast */
+  color: cobalt blue; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: clamp(18px, 4vw, 26px); /* Fluid typography: shrinks on mobile, grows on desktop */
+  font-weight: bold;
+  flex-shrink: 0;
+  padding: 0 15px;
+}
 
 /* Main split layout */
 #container {
