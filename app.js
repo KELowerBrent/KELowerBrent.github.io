@@ -119,7 +119,8 @@ const chart = new Chart(ctx, {
         labels: ["LULC", "NDVI", "LST"],
         datasets: [{
             label: "Raster Values",
-            data: [0, 0, 0]
+            data:,
+            backgroundColor: ["#3182ce", "#2ecc71", "#e53e3e"]
         }]
     },
     options: {
