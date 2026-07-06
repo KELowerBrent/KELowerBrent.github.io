@@ -1,100 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>WebGIS Dashboard</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-layers-expanded@1.0.0/dist/leaflet-control-layers-expanded.css"/>
-
-<link rel="stylesheet" href="style.css">
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<script src="https://unpkg.com/georaster"></script> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Dashboard</title>
+    <!-- External Leaflet and Layer CSS -->
+    <link rel="stylesheet" href="https://unpkg.com"/>
+    <link rel="stylesheet" href="https://unpkg.com"/>
+    <!-- Your Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
     
-<script src="https://unpkg.com/geoblaze"></script>
-
-<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <!-- GIS and Charting JavaScript Engines -->
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+    <script src="https://jsdelivr.net"></script>
 </head>
-
 <body>
-    
+
+    <!-- Main Header Panel (Fixes overlapping text/logo) -->
     <div id="header">
-    <img src="download.png" alt="download" id="download"> 
-    <span id="title">Brent River Park</span>
+        <img src="download.png" alt="University Logo" id="download">
+        <span id="title">Brent River Park</span>
     </div>
-    
-<div id="container">
 
-    <div id="map"></div>
+    <!-- Layout Flexbox Container splitting into 3 panels -->
+    <div id="dashboard-container">
+        
+        <!-- Container 1: The Map Viewport -->
+        <div id="map-container"></div>
 
-      <div id="legend-container">
+        <!-- Container 2: Layer Visibility Legend -->
+        <div id="legend-container">
             <h2>Layers</h2>
-            <p>
-                ✓ LULC<br>
-                ✓ NDVI<br>
-                ✓ LST
-            </p>
+            <div class="legend-items">
+                <p>✓ LULC</p>
+                <p>✓ NDVI</p>
+                <p>✓ LST</p>
+            </div>
         </div>
 
-    <div id="sidebar">
-          <div id="feature-info" class="sidebar-row">
-        <h3>About the project</h3>
-        <p>Web-based Geospatial Database to Support 
-Environmental Regeneration in Brent River Park.</p>  
-         <a href="Brent_River_Park.pdf" target="_blank">
-            Open Project Information
-        </a>
+        <!-- Container 3: Analytical Information Display -->
+        <div id="info-panel-container">
+            <div id="feature-info" class="sidebar-row">
+                <h3>About the project</h3>
+                <p>Web-based Geospatial Database to Support Environmental Regeneration in Brent River Park.</p>
+                <a href="Brent_River_Park.pdf" target="_blank" class="project-link"> Open Project Information </a>
+            </div>
+
+            <!-- Spatial Reading Output -->
+            <table id="infoTable">
+                <tr>
+                    <th>Latitude</th>
+                    <td id="lat">-</td>
+                </tr>
+                <tr>
+                    <th>Longitude</th>
+                    <td id="lon">-</td>
+                </tr>
+                <tr>
+                    <th>Land Cover</th>
+                    <td id="lulc">-</td>
+                </tr>
+                <tr>
+                    <th>NDVI</th>
+                    <td id="ndvi">-</td>
+                </tr>
+                <tr>
+                    <th>LST (°C)</th>
+                    <td id="lst">-</td>
+                </tr>
+            </table>
+
+            <!-- Data Chart Output -->
+            <div class="chart-container">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+
     </div>
 
-        <table id="infoTable">
-
-            <tr>
-                <th>Latitude</th>
-                <td id="lat">-</td>
-            </tr>
-
-            <tr>
-                <th>Longitude</th>
-                <td id="lon">-</td>
-            </tr>
-
-            <tr>
-                <th>Land Cover</th>
-                <td id="lulc">-</td>
-            </tr>
-
-            <tr>
-                <th>NDVI</th>
-                <td id="ndvi">-</td>
-            </tr>
-
-            <tr>
-                <th>LST (°C)</th>
-                <td id="lst">-</td>
-            </tr>
-
-        </table>
-
-        <div class="chart-container">
-
-            <canvas id="chart"></canvas>
-
-        </div>
-
-        </div>
-
-</div>
-
-<script src="app.js"></script>
-
+    <!-- Main Logic Execution Script -->
+    <script src="app.js"></script>
 </body>
 </html>
