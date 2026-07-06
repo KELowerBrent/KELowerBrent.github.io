@@ -1,116 +1,88 @@
 // =========================
-// INITIALIZE MAP
+// 1. INITIALIZE MAP ENGINE (IMMEDIATE)
 // =========================
 
-const map = L.map("map").setView([51.7, -0.12], 8);
-//add scale bar
-L.control.scale({ position: 'bottomright', metric:true, imperial:false, maxWidth: 200 }).addTo(map);  
+// Center view coordinates directly over Brent River Park, West London
+const map = L.map("map").setView([51.515, -0.34], 12);
 
-// Base map
+L.control.scale({ position: 'bottomright', metric: true, imperial: false, maxWidth: 200 }).addTo(map);  
+
+// Standard OpenStreetMap Tile Layer - Instantly added to prevent blank canvas
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
-});
+}).addTo(map); // <--- Added directly to ensure immediate visual feedback
 
-var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
     attribution: '&copy; OpenTopoMap contributors'
 });
 
-var cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com">CARTO</a>'
+const cartoLight = L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; CARTO'
 });
 
-var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '&copy; Esri'
-})
-//.addTo(map); // Set default active base layer
-
-var dark = L.tileLayer(
-'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
-{
+const dark = L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
     attribution: '&copy; CARTO'
-}).addTo(map);
+});
 
-var baseMaps = {
+const baseMaps = {
     "OpenStreetMap": osm,
+    "Dark Theme Map": dark,
     "OpenTopoMap": topo,
-    "CartoDB Light": cartoLight,
-    "Esri Satellite": satellite
+    "CartoDB Light": cartoLight
 };
 
-var overlayMaps = {}; 
-// Add structural toggle control to the map
-L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
+// Global Layer Control variable placed on the map structural canvas
+const layerControl = L.control.layers(baseMaps, null, { collapsed: true, position: 'bottomleft' }).addTo(map);
 
-// 1. Define your file paths and styling configurations
+// Vector Overlay Storage Paths
 const geoJsonFiles = [
-  { path: './Data/London_Ward_json.geojson', color: '#3388ff', label: 'Ward' },
-  { path: './Data/London_Boroughs.geojson', color: '#ff5533', label: 'Borough' },
-  { path: './Data/Lower_brent_river.geojson', color: '#2ecc71', label: 'Lower Brent River' },
-    { path: './Data/Lower_brent_river_catchment.geojson', color: '#2ecc71', label: 'Catchment' }, 
+    { path: './Data/London_Ward_json.geojson', color: '#3388ff', label: 'Ward' },
+    { path: './Data/London_Boroughs.geojson', color: '#ff5533', label: 'Borough' },
+    { path: './Data/Lower_brent_river.geojson', color: '#2ecc71', label: 'Lower Brent River' },
+    { path: './Data/Lower_brent_river_catchment.geojson', color: '#9b59b6', label: 'Catchment' }
 ];
 
-// 2. Map paths to fetch promises
+// Async execution pipeline processing vector layouts
 const fetchPromises = geoJsonFiles.map(file => 
-  fetch(file.path).then(res => {
-    if (!res.ok) throw new Error(`Failed to load ${file.path}`);
-    return res.json();
-  })
+    fetch(file.path)
+        .then(res => {
+            if (!res.ok) throw new Error(`Network failure resolving: ${file.path}`);
+            return res.json();
+        })
+        .catch(err => {
+            console.warn(`Vector layer skipped: ${file.path}. Check if file exists.`, err);
+            return null; // Don't break the promise chain if one file is missing
+        })
 );
 
-// 3. Process all files together
 Promise.all(fetchPromises)
-  .then(datasets => {
-    datasets.forEach((data, index) => {
-      const config = geoJsonFiles[index];
-
-      // 4. Create and add each layer
-      L.geoJSON(data, {
-        style: {
-          color: config.color,
-          weight: 2,
-          fillOpacity: 0.2
-        },
-        onEachFeature: function(feature, layer) {
-          if (feature.properties) {
-            // Dynamically look for common name fields
-            const name = feature.properties.name || feature.properties.NAME || 'Unknown';
-            layer.bindPopup(`<b>${config.label}:</b> ${name}`);
-          }
-        }
-      }).addTo(map);
-    });
-  })
-  .catch(error => console.error('Error loading multiple GeoJSON files:', error));
-
-fetch('./Data/London_Ward_json.geojson')
-  .then(response => response.json())
-  .then(data => {
-
-    L.geoJSON(data, {
-      style: {
-        color: '#3388ff',
-        weight: 2
-      },
-      onEachFeature: function(feature, layer) {
-        if (feature.properties) {
-          layer.bindPopup(
-            `<b>${feature.properties.name}</b>`
-          );
-        }
-      }
-    }).addTo(map);
-
-  })
-  .catch(error => console.error('Error loading GeoJSON:', error));
+    .then(datasets => {
+        datasets.forEach((data, index) => {
+            if (!data) return; // Skip failed fetches
+            const config = geoJsonFiles[index];
+            const vectorLayer = L.geoJSON(data, {
+                style: { color: config.color, weight: 2, fillOpacity: 0.1 },
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties) {
+                        const name = feature.properties.name || feature.properties.NAME || 'Unknown Region';
+                        layer.bindPopup(`<b>${config.label}:</b> ${name}`);
+                    }
+                }
+            }).addTo(map);
+            
+            layerControl.addOverlay(vectorLayer, config.label);
+        });
+    })
+    .catch(error => console.error('Error compiling external Vector layers: ', error));
 
 // =========================
-// GLOBAL VARIABLES
+// 2. RASTER INITIALIZATION & CHART SETUP
 // =========================
 
-let lulcRaster, ndviRaster, lstRaster;
+let lulcRaster = null, ndviRaster = null, lstRaster = null;
+let lulcLayer = null, ndviLayer = null, lstLayer = null;
 
-// Chart setup
 const ctx = document.getElementById("chart");
 
 const chart = new Chart(ctx, {
@@ -118,86 +90,101 @@ const chart = new Chart(ctx, {
     data: {
         labels: ["LULC", "NDVI", "LST"],
         datasets: [{
-            label: "Raster Values",
-            data:,
+            label: "Pixel Analysis Readings",
+            data: [0, 0, 0], // Safe initialization array
             backgroundColor: ["#3182ce", "#2ecc71", "#e53e3e"]
         }]
     },
     options: {
-        responsive: true
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: true }
+        }
     }
 });
 
-
 // =========================
-// LOAD GEOTIFF FILES
+// 3. LOAD GEOTIFF ENGINE ARCHITECTURE (DEFERRED ASYNC)
 // =========================
 
 async function loadRasters() {
+    try {
+        // Fetch LULC
+        const lulcResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
+        if (!lulcResponse.ok) throw new Error("LULC GeoTIFF file not found");
+        const lulcArrayBuffer = await lulcResponse.arrayBuffer();
+        lulcRaster = await parseGeoraster(lulcArrayBuffer);
 
-    // LULC
-    const lulcResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
-    const lulcArrayBuffer = await lulcResponse.arrayBuffer();
-    lulcRaster = await parseGeoraster(lulcArrayBuffer);
+        // Fetch NDVI
+        const ndviResponse = await fetch("Data/NDVI.tif");
+        if (!ndviResponse.ok) throw new Error("NDVI GeoTIFF file not found");
+        const ndviArrayBuffer = await ndviResponse.arrayBuffer();
+        ndviRaster = await parseGeoraster(ndviArrayBuffer);
 
-    // NDVI
-    const ndviResponse = await fetch("data/NDVI.tif");
-    const ndviArrayBuffer = await ndviResponse.arrayBuffer();
-    ndviRaster = await parseGeoraster(ndviArrayBuffer);
+        // Fetch LST
+        const lstResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
+        if (!lstResponse.ok) throw new Error("LST GeoTIFF file not found");
+        const lstArrayBuffer = await lstResponse.arrayBuffer();
+        lstRaster = await parseGeoraster(lstArrayBuffer);
 
-    // LST
-    const lstResponse = await fetch("Data/Image_Landsat_2017_LST_catchment.tif");
-    const lstArrayBuffer = await lstResponse.arrayBuffer();
-    lstRaster = await parseGeoraster(lstArrayBuffer);
+        // Check if the external constructor plugin exists in global window memory space
+        if (typeof GeoRasterLayer !== "undefined") {
+            lulcLayer = new GeoRasterLayer({ georaster: lulcRaster, opacity: 0.5, resolution: 256 });
+            ndviLayer = new GeoRasterLayer({ georaster: ndviRaster, opacity: 0.5, resolution: 256 });
+            lstLayer = new GeoRasterLayer({ georaster: lstRaster, opacity: 0.5, resolution: 256 });
 
-    // Add rasters to map as layers
-    const lulcLayer = new GeoRasterLayer({
-        georaster: lulcRaster,
-        opacity: 0.6,
-        resolution: 256
-    });
+            layerControl.addOverlay(lulcLayer, "Raster Map: LULC");
+            layerControl.addOverlay(ndviLayer, "Raster Map: NDVI");
+            layerControl.addOverlay(lstLayer, "Raster Map: LST");
 
-    const ndviLayer = new GeoRasterLayer({
-        georaster: ndviRaster,
-        opacity: 0.6,
-        resolution: 256
-    });
+            // Set LULC checked by default
+            lulcLayer.addTo(map);
+            setupLegendToggles();
+        } else {
+            console.error("GeoRasterLayer engine missing. Verify scripts in index.html");
+        }
 
-    const lstLayer = new GeoRasterLayer({
-        georaster: lstRaster,
-        opacity: 0.6,
-        resolution: 256
-    });
+    } catch (err) {
+        console.error("Raster Engine deferred initialization note: ", err.message);
+        // Map continues displaying base imagery safely even if local files fail to load
+    }
+}
 
-    // Layer control
-    const overlays = {
-        "LULC": lulcLayer,
-        "NDVI": ndviLayer,
-        "LST": lstLayer
-    };
+function getPixelValue(raster, lat, lng) {
+    if (!raster || typeof geoblaze === "undefined") return null;
+    try {
+        const val = geoblaze.identify(raster, [lng, lat]);
+        if (Array.isArray(val)) {
+            return (val[0] !== null && !isNaN(val[0])) ? val[0] : null;
+        }
+        return (val !== null && !isNaN(val)) ? val : null;
+    } catch (e) {
+        return null;
+    }
+}
 
-    L.control.layers(null, overlays).addTo(map);
+function setupLegendToggles() {
+    const tLulc = document.getElementById("toggle-lulc");
+    const tNdvi = document.getElementById("toggle-ndvi");
+    const tLst = document.getElementById("toggle-lst");
 
-    lulcLayer.addTo(map); // default layer
+    if (tLulc && lulcLayer) {
+        tLulc.addEventListener("change", (e) => e.target.checked ? lulcLayer.addTo(map) : map.removeLayer(lulcLayer));
+    }
+    if (tNdvi && ndviLayer) {
+        tNdvi.addEventListener("change", (e) => e.target.checked ? ndviLayer.addTo(map) : map.removeLayer(ndviLayer));
+    }
+    if (tLst && lstLayer) {
+        tLst.addEventListener("change", (e) => e.target.checked ? lstLayer.addTo(map) : map.removeLayer(lstLayer));
+    }
 }
 
 // =========================
-// GET RASTER VALUE AT POINT
-// =========================
-
-function getValue(raster, lat, lng) {
-
-    const value = geoblaze.identify(raster, [lng, lat]);
-
-    return value;
-}
-
-// =========================
-// MOUSE MOVE EVENT
+// 4. MOUSE INTERACTION TRACKER
 // =========================
 
 map.on("mousemove", function (e) {
-
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
 
@@ -206,26 +193,22 @@ map.on("mousemove", function (e) {
 
     if (!lulcRaster || !ndviRaster || !lstRaster) return;
 
-    const lulc = getValue(lulcRaster, lat, lng);
-    const ndvi = getValue(ndviRaster, lat, lng);
-    const lst = getValue(lstRaster, lat, lng);
+    const lulc = getPixelValue(lulcRaster, lat, lng);
+    const ndvi = getPixelValue(ndviRaster, lat, lng);
+    const lst = getPixelValue(lstRaster, lat, lng);
 
-    document.getElementById("lulc").innerText = lulc ?? "NoData";
-    document.getElementById("ndvi").innerText = ndvi ?? "NoData";
-    document.getElementById("lst").innerText = lst ?? "NoData";
+    document.getElementById("lulc").innerText = lulc !== null ? lulc.toFixed(1) : "NoData";
+    document.getElementById("ndvi").innerText = ndvi !== null ? ndvi.toFixed(4) : "NoData";
+    document.getElementById("lst").innerText = lst !== null ? lst.toFixed(1) : "NoData";
 
     chart.data.datasets[0].data = [
-        lulc ?? 0,
-        ndvi ?? 0,
-        lst ?? 0
+        lulc !== null ? lulc : 0,
+        ndvi !== null ? ndvi : 0,
+        lst !== null ? lst : 0
     ];
 
-    chart.update();
-
+    chart.update('none');
 });
 
-// =========================
-// START APP
-// =========================
-
+// Run file processor safely after base map configuration maps are structural
 loadRasters();
