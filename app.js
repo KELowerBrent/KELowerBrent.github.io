@@ -56,7 +56,7 @@ function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
                 opacity: 0.7,
                 resolution: 256 // Improves rendering performance
             });
-    rasterLayer.addTo(map);
+    rasterLayer;//.addTo(map);
             
 
             // Save raster object globally for click calculations
