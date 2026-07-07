@@ -8,8 +8,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // 2. Global Variables for Data and Calculation Tracking
 let georaster2017 = null;
 let georaster2026 = null;
-let lulcRaster2016 = null;
-let lulcRaster2026 = null;
+// let lulcRaster2016 = null;
+// let lulcRaster2026 = null;
 
 // // 3. Layer Switcher Dictionaries
 // const baseMaps = {
