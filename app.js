@@ -165,30 +165,24 @@ loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif", false, (raster) => {
 
 // 4. Unified Map Click Event
 map.on("click", function(e) {
-    // document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(6);
-    // document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
-
     // Retrieve raw integer pixel values
     const classCode2016 = getLULCValue(lulcRaster2016, e.latlng);
     const classCode2026 = getLULCValue(lulcRaster2026, e.latlng);
 
     // Map integers to human-readable names using the LULC_CLASSES object
-    const className2016 = LULC_CLASSES[classCode2016] || `Unknown Class (${classCode2016})`;
-    const className2026 = LULC_CLASSES[classCode2026] || `Unknown Class (${classCode2026})`;
+    const className2016 = (typeof classCode2016 === 'number') ? (LULC_CLASSES[classCode2016] || `Unknown Class (${classCode2016})`) : classCode2016;
+    const className2026 = (typeof classCode2026 === 'number') ? (LULC_CLASSES[classCode2026] || `Unknown Class (${classCode2026})`) : classCode2026;
 
-    // Handle display scenarios (If outside bounds or loading)
-    const display2016 = (typeof classCode2016 === 'number') ? className2016 : classCode2016;
-    const display2026 = (typeof classCode2026 === 'number') ? className2026 : classCode2026;
-
-    document.getElementById("value_3").innerHTML = display2016;
-    document.getElementById("value_4").innerHTML = display2026;
+    // Update the HTML interface elements directly using your target IDs
+    document.getElementById("value_3").innerHTML = className2016;
+    document.getElementById("value_4").innerHTML = className2026;
 
     // 5. Display the Categorical Transition Strategy
     const changeElement = document.getElementById("value_5");
     
     if (typeof classCode2016 === 'number' && typeof classCode2026 === 'number') {
         if (classCode2016 === classCode2026) {
-            changeElement.innerHTML = `<span style="color: gray;">No Change</span>`;
+            changeElement.innerHTML = `<span style="color: gray; font-weight: 500;">No Change</span>`;
         } else {
             changeElement.innerHTML = `<span style="color: #d9534f; font-weight: bold;">${className2016} → ${className2026}</span>`;
         }
@@ -197,9 +191,10 @@ map.on("click", function(e) {
     }
 });
 
-// Helper extraction function
+// FIXED: Helper extraction function extracting from Band 0 index matrix array
 function getLULCValue(raster, latlng) {
     if (!raster) return "Loading...";
+    
     const x = Math.floor((latlng.lng - raster.xmin) / raster.pixelWidth);
     const y = Math.floor((raster.ymax - latlng.lat) / raster.pixelHeight);
 
@@ -207,8 +202,17 @@ function getLULCValue(raster, latlng) {
         return "Outside Raster";
     }
     
-    const rawVal = raster.values[y][x];
-    if (rawVal === raster.noDataValue || rawVal === null) return "No Data";
+    // CRITICAL FIX: georaster formats arrays as [band][y][x]. Band 0 handles single-band datasets.
+    if (!raster.values || !raster.values[0] || !raster.values[0][y]) return "No Data";
     
-    return Math.round(rawVal); // Ensure integer evaluation
+    const rawVal = raster.values[0][y][x];
+    
+    if (rawVal === raster.noDataValue || rawVal === null || rawVal === undefined) {
+        return "No Data";
+    }
+    
+    return Math.round(rawVal); // Returns clean single class index integer (e.g. 1, 2, 3)
 }
+
+
+
