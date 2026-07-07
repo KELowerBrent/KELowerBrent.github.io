@@ -16,7 +16,7 @@ let georaster;
 
 // Load GeoTIFF from GitHub repository
 
-fetch("Data/Image_Landsat_2017_LST_catchment_1.tif")
+fetch("Data/Image_class_2016_catchment.tif")
 
 .then(response=>response.arrayBuffer())
 
