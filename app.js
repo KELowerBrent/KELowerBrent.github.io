@@ -1,5 +1,5 @@
 // 1. Initialize the Leaflet Map
-const map = L.map('map').setView([0, 0], 2); // Fallback global view
+const map = L.map('map').setView([51.8, -0.8], 10); 
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
@@ -8,6 +8,19 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // 2. Global Variables for Data and Calculation Tracking
 let georaster2017 = null;
 let georaster2026 = null;
+let lulcRaster2016 = null;
+let lulcRaster2026 = null;
+
+// 3. Layer Switcher Dictionaries
+const baseMaps = {
+    "OpenStreetMap": osmBase
+};
+
+// This tracking object holds references to layers shown inside the UI switcher box
+const overlayMaps = {};
+const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+
+
 
 // Reusable function to fetch and map a GeoTIFF layer
 function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
