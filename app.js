@@ -1,468 +1,246 @@
-// Initialize the map centered on London
-var map = L.map('map').setView([51.5, -0.12], 10);
-//add scale bar
-L.control.scale({ position: 'bottomright', metric:true, imperial:false, maxWidth: 200 }).addTo(map);    
+// // 1. Initialize the Leaflet Map
+// const map = L.map('map').setView([0, 0], 5); 
 
-var coordsDiv = document.getElementById("coords");
-
-map.on("mousemove", function (e) {
-    var lat = e.latlng.lat.toFixed(5);
-    var lng = e.latlng.lng.toFixed(5);
-
-    coordsDiv.innerHTML = "Lat: " + lat + " | Lng: " + lng;
-});
-
-// ==========================================
-// 1. BASE LAYERS
-// ==========================================
-var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-});
-
-var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    maxZoom: 17,
-    attribution: '&copy; OpenTopoMap contributors'
-});
-
-var cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com">CARTO</a>'
-});
-
-var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '&copy; Esri'
-})
-//.addTo(map); // Set default active base layer
-
-var dark = L.tileLayer(
-'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
-{
-    attribution: '&copy; CARTO'
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// ==========================================
-// 2. WMS OVERLAY LAYERS (GeoServer)
-// ==========================================
-var geoserverUrl = 'http://localhost:8081/geoserver/test_1_KE_Brent/wms';
+// 1. Initialize the map
+const map = L.map('map').setView([51.505, -0.09], 13);
 
-var River_Water_Body = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:River_Water_Body',
-    format: 'image/png',
-    transparent: true
+// 2. Define the geographic bounds where the PNG should sit
+// Format: [[southWestLatitude, southWestLongitude], [northEastLatitude, northEastLongitude]]
+const imageBounds = [[51.49, -0.1], [51.51, -0.08]];
+
+// 3. Add the PNG image overlay
+const imageOverlay = L.imageOverlay('Data/LST_2026.png', imageBounds, {
+    opacity: 0.8,       // Optional: Set image transparency (0.0 to 1.0)
+    alt: 'Map Overlay', // Optional: Accessibility text
+    interactive: true   // Optional: Set to true if you want to attach click events
+}).addTo(map);
+
+// 2. Global Variables for Data and Calculation Tracking
+let georaster2017 = null;
+let georaster2026 = null;
+// let lulcRaster2016 = null;
+// let lulcRaster2026 = null;
+
+// // 3. Layer Switcher Dictionaries
+// const baseMaps = {
+//     "OpenStreetMap": osmBase
+// };
+
+// This tracking object holds references to layers shown inside the UI switcher box
+// const overlayMaps = {};
+// const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+
+
+
+// Reusable function to fetch and map a GeoTIFF layer
+function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
+    fetch(filePath)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} for file: ${filePath}`);
+            }
+            return response.arrayBuffer();
+        })
+        .then(arrayBuffer => parseGeoraster(arrayBuffer))
+        .then(raster => {
+            console.log(`Successfully parsed GeoTIFF: ${filePath}`, raster);
+            
+            // Generate the visual Leaflet layer
+            
+            const rasterLayer = new GeoRasterLayer({
+                georaster: raster,
+                opacity: 0.7,
+                resolution: 256 // Improves rendering performance
+            });
+    rasterLayer;//.addTo(map);
+            
+
+            // Save raster object globally for click calculations
+            successCallback(raster);
+
+            // Zoom map to the dataset bounds if it's the primary layer
+            if (isPrimaryForBounds) {
+                map.fitBounds(rasterLayer.getBounds());
+            }
+        })
+        .catch(error => {
+            console.error(`Failed to load raster layer from ${filePath}:`, error);
+            alert(`Error loading layer: ${filePath}. Check browser console for details.`);
+        });
+}
+
+// 3. Trigger Asynchronous Loading for Both Catchment Rasters
+// CRITICAL: Verify these paths match your project structure precisely
+loadRasterLayer("Data/Image_Landsat_2017_LST_catchment.tif", true, (raster) => {
+    georaster2017 = raster;
 });
 
-var Lake_Water_Body = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:Lake_Water_Body',
-    format: 'image/png',
-    transparent: true
+loadRasterLayer("Data/Image_Landsat_2026_LST_catchment_wgs84.tif", false, (raster) => {
+    georaster2026 = raster;
 });
 
-var River_Water_Body_Catchment = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:River_Water_Body_Catchment',
-    format: 'image/png',
-    transparent: true
-});
+// 4. Unified Interactive Map Click Handler
+map.on("click", function(e) {
+    // Render pinpoint coordinates
+    document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(6);
+    document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
 
-var Lower_brent_river_catchment= L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:Lower_brent_river_catchment',
-    format: 'image/png',
-    transparent: true
-}); 
+    const valElement1 = document.getElementById("value_1");
+    const valElement2 = document.getElementById("value_2");
+    const diffElement = document.getElementById("value_");
 
-var Lower_brent_river = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:Lower_brent_river',
-    format: 'image/png',
-    transparent: true
-}); 
+    // Extract numerical pixel values
+    const val2017 = getRasterValue(georaster2017, e.latlng);
+    const val2026 = getRasterValue(georaster2026, e.latlng);
 
-var Surface_Water_Operational_Catchment = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:Surface_Water_Operational_Catchment',
-    format: 'image/png',
-    transparent: true
-});
+    // Update UI elements for individual years
+    valElement1.innerHTML = formatDisplayValue(val2017);
+    valElement2.innerHTML = formatDisplayValue(val2026);
 
-var London_Ward = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:London_Ward_NDVI',
-    format: 'image/png',
-    transparent: true
-});
-
-var London_Borough = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:London_Borough_NDVI',
-    format: 'image/png',
-    transparent: true
-});
-
-var landuse = L.tileLayer.wms(geoserverUrl, {
-    layers: 'test_1_KE_Brent:gis_osm_landuse',
-    format: 'image/png',
-    transparent: true
-});
-
-var lst2016 = L.tileLayer.wms(
-    "http://localhost:8081/geoserver/Lower_BrentRiver_raster/wms",
-    {
-        layers:"Lower_BrentRiver_raster:Image_Landsat_2016_LST_catchment",
-        format:"image/png",
-        transparent:true
-    }
-);
-
-var lst2026 = L.tileLayer.wms(
-    "http://localhost:8081/geoserver/Lower_BrentRiver_raster/wms",
-    {
-        layers:"Lower_BrentRiver_raster:Image_Landsat_2026_LST_catchment",
-        format:"image/png",
-        transparent:true
-    }
-);
-
-//Load default active overlays
-River_Water_Body.addTo(map);
-Lake_Water_Body.addTo(map);
-River_Water_Body_Catchment.addTo(map);
-Surface_Water_Operational_Catchment.addTo(map);
-London_Ward.addTo(map);
-London_Borough.addTo(map);
-
-// ==========================================
-// 3. LAYER CONTROL INTERFACE
-// ==========================================
-// Grouping your background base maps
-var baseMaps = {
-    "OpenStreetMap": osm,
-    "OpenTopoMap": topo,
-    "CartoDB Light": cartoLight,
-    "Esri Satellite": satellite
-};
-
-// Grouping your data overlays
-var overlayMaps = {
-    "London Borough": London_Borough,
-    "London Ward": London_Ward,
-    "Surface Water Operational Catchment": Surface_Water_Operational_Catchment,
-    "River Water Body Catchment": River_Water_Body_Catchment,
-    "Lake Water Body": Lake_Water_Body,
-    "River Water Body": River_Water_Body,
-    "Landuse": landuse,
-   "Lower Brent River Catchment": Lower_brent_river_catchment,
-    "Lower Brent River": Lower_brent_river,
-    "LST 2016": lst2016,
-    "LST 2026": lst2026
-
-};
-
-// Add structural toggle control to the map
-L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
-
-// Show Boroughs when zoomed out, Wards when zoomed in
-var wardZoomLevel = 12;
-map.on('zoomend', function () {
-
-    var currentZoom = map.getZoom();
-
-    if (currentZoom >= wardZoomLevel) {
-
-        // Remove Borough layer
-        if (map.hasLayer(London_Borough)) {
-            map.removeLayer(London_Borough);
-        }
-
-        // Add Ward layer
-        if (!map.hasLayer(London_Ward)) {
-            map.addLayer(London_Ward);
-        }
-
+    // Calculate absolute cross-decade difference
+    if (typeof val2017 === 'number' && typeof val2026 === 'number') {
+        const difference = val2026 - val2017;
+        diffElement.innerHTML = difference.toFixed(2);
     } else {
-
-        // Remove Ward layer
-        if (map.hasLayer(London_Ward)) {
-            map.removeLayer(London_Ward);
-        }
-
-        // Add Borough layer
-        if (!map.hasLayer(London_Borough)) {
-            map.addLayer(London_Borough);
-        }
-    }
-
-});
-
-//chart
-fetch(
-    "http://localhost:8081/geoserver/test_1_KE_Brent/ows?" +
-    "service=WFS&version=1.0.0&request=GetFeature" +
-    "&typeName=test_1_KE_Brent:London_Borough" +
-    "&outputFormat=application/json"
-)
-.then(res => res.json())
-.then(data => {
-
-    let boroughNames = [];
-    let boroughAreas = [];
-
-    data.features.forEach(f => {
-
-        let name = f.properties.NAME;
-        let area = f.properties.HECTARES;
-
-        // safety check (IMPORTANT FIX)
-        if (name && area !== null && area !== undefined) {
-            boroughNames.push(name);
-            boroughAreas.push(area);
-        }
-    });
-
-    const ctx = document.getElementById("boroughChart");
-
-    if (!ctx) {
-        console.error("Chart canvas not found!");
-        return;
-    }
-
-    new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: boroughNames,
-            datasets: [{
-                label: "Area (Hectares)",
-                data: boroughAreas,
-                backgroundColor: "Blue"
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-    padding: {
-      top: 10,
-      right: 20,
-      bottom: 20,
-      left: 10
-    }
-  },
-            plugins: {
-                legend: { display: true }
-            },
-            scales: {
-    x: {
-      ticks: {
-        font: {
-          size: 10
-        }
-      }
-    },
-    y: {
-      beginAtZero: true,
-      ticks: {
-        font: {
-          size: 10
-        }
-      }
-    }
-  }
-}
-    });
-
-});
-
-// WARD CHART
-fetch("http://localhost:8081/geoserver/test_1_KE_Brent/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=test_1_KE_Brent:London_Ward_NDVI&outputFormat=application/json")
-  .then(res => res.json())
-  .then(data => {
-    let wardNames = [];
-    let wardAreas = [];
-
-    data.features.forEach(f => {
-      let name = f.properties.BOROUGH;
-      let area = f.properties._mean;
-      if (name && area !== null && area !== undefined) {
-        wardNames.push(name);
-        wardAreas.push(area);
-      }
-    });
-
-    var ctx = document.getElementById("wardChart");
-    if (!ctx) return;
-
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: wardNames,
-        datasets: [{
-          label: "Measure of Greenness (NDVI)",
-          data: wardAreas,
-          backgroundColor: "Green"
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-         layout: {
-    padding: {
-      top: 10,
-      right: 20,
-      bottom: 20,
-      left: 10
-    }
-  },
-        plugins: {
-          legend: { display: true }
-        },
-        scales: {
-    x: {
-      ticks: {
-        font: {
-          size: 10
-        }
-      }
-    },
-    y: {
-      beginAtZero: true,
-      ticks: {
-        font: {
-          size: 10
-        }
-      }
-    }
-  }
-}
-    });
-  });
-
-
-
-function getFeatureInfoUrl(map, layer, latlng){
-
-    var point =
-        map.latLngToContainerPoint(
-            latlng,
-            map.getZoom()
-        );
-
-    var size = map.getSize();
-
-    var params = {
-        request:'GetFeatureInfo',
-        service:'WMS',
-        srs:'EPSG:32630',
-        styles:'',
-        transparent:true,
-        version:'1.1.1',
-        format:'image/png',
-        bbox:map.getBounds().toBBoxString(),
-        height:size.y,
-        width:size.x,
-        layers:layer.options.layers,
-        query_layers:layer.options.layers,
-        info_format:'application/json',
-        x:Math.round(point.x),
-        y:Math.round(point.y)
-    };
-
-    return layer._url +
-           L.Util.getParamString(
-               params,
-               layer._url,
-               true
-           );
-}
-
-async function getLSTValue(layer, latlng){
-
-     try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.features && data.features.length > 0) {
-            return data.features[0].properties.GRAY_INDEX;
-        }
-
-        return null;
-    } catch (err) {
-        console.error(err);
-        return null;
-    }
-}
-
-// =====================================================
-// 9. LST CHART
-// =====================================================
-var lstChart = new Chart(document.getElementById("lstChart"), {
-    type: "bar",
-    data: {
-        labels: ["2016", "2026"],
-        datasets: [{
-            label: "LST (°C)",
-            data: [0, 0],
-            backgroundColor: ["orange", "red"]
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
+        diffElement.innerHTML = "-";
     }
 });
 
+// 5. Utility Data Extraction Function
+function getRasterValue(raster, latlng) {
+    if (!raster) return "Loading...";
 
-map.on('click', async function(e){
+    const x = Math.floor((latlng.lng - raster.xmin) / raster.pixelWidth);
+    const y = Math.floor((raster.ymax - latlng.lat) / raster.pixelHeight);
 
-    const value2016 =
-        await getLSTValue(
-            lst2016,
-            e.latlng
-        );
+    // Dynamic boundary safety check
+    if (x < 0 || y < 0 || x >= raster.width || y >= raster.height) {
+        return "Outside Raster";
+    }
 
-    const value2026 =
-        await getLSTValue(
-            lst2026,
-            e.latlng
-        );
+    // Safely parse single band pixel index arrays
+    const rawVal = raster.values[0][y][x];
+    
+    // Catch no-data values or unpopulated pixels
+    if (rawVal === raster.noDataValue || rawVal === null || undefined) {
+        return "No Data";
+    }
+    
+    return rawVal;
+}
 
-    const diff =
-        (value2026 - value2016)
-        .toFixed(1);
+// Helper to sanitize display outputs
+function formatDisplayValue(val) {
+    return (typeof val === 'number') ? val.toFixed(2) : val;
+}
 
-    document.getElementById(
-        "lat-value"
-    ).innerText =
-        e.latlng.lat.toFixed(5);
+// 1. Define your LULC Classification Legend Map
+// Adjust these numbers and text strings to match your specific GeoTIFF raster legend
+const LULC_CLASSES = {
+    0: "Unclassified/No Data",
+    1: "Flat Land",
+    2: "Built-up",
+    3: "Waterboidies",
+    4: "Trees/Vegetation"
+};
 
-    document.getElementById(
-        "lon-value"
-    ).innerText =
-        e.latlng.lng.toFixed(5);
+// 2. Global Variables for LULC Rasters
+let lulcRaster2016 = null;
+let lulcRaster2026 = null;
 
-    document.getElementById(
-        "lst2016-value"
-    ).innerText =
-        value2016 + " °C";
+// Reusable loader optimized for integer LULC files
+function loadLULCLayer(filePath, isPrimaryForBounds, successCallback) {
+    fetch(filePath)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            return response.arrayBuffer();
+        })
+        .then(arrayBuffer => parseGeoraster(arrayBuffer))
+        .then(raster => {
+            console.log(`Parsed LULC Raster: ${filePath}`, raster);
+            
+            const rasterLayer = new GeoRasterLayer({
+                georaster: raster,
+                opacity: 0.8,
+                pixelValuesToColorFn: values => {
+                    // Optional: Custom coloring logic per class can go here if needed
+                    return null; 
+                }
+            });
+            
+            rasterLayer;//.addTo(map);
+            successCallback(raster);
 
-    document.getElementById(
-        "lst2026-value"
-    ).innerText =
-        value2026 + " °C";
+            if (isPrimaryForBounds) {
+                map.fitBounds(rasterLayer.getBounds());
+            }
+        })
+        .catch(err => console.error(`LULC load error (${filePath}):`, err));
+}
 
-    document.getElementById(
-        "lst-difference"
-    ).innerText =
-        (diff > 0 ? "+" : "")
-        + diff + " °C";
-
-    if(diff > 0)
-        document.getElementById(
-            "lst-status"
-        ).innerText =
-            "Warming ▲";
-
-    else
-        document.getElementById(
-            "lst-status"
-        ).innerText =
-            "Cooling ▼";
-
-    lstChart.data.datasets[0].data = [v2016, v2026];
-    lstChart.update();
+// 3. Load your LULC TIF Files (Ensure correct paths)
+loadLULCLayer("Data/Image_class_2016_catchment.tif", true, (raster) => {
+    lulcRaster2016 = raster;
 });
+
+loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif", false, (raster) => {
+    lulcRaster2026 = raster;
+});
+
+// 4. Unified Map Click Event
+map.on("click", function(e) {
+    // Retrieve raw integer pixel values
+    const classCode2016 = getLULCValue(lulcRaster2016, e.latlng);
+    const classCode2026 = getLULCValue(lulcRaster2026, e.latlng);
+
+    // Map integers to human-readable names using the LULC_CLASSES object
+    const className2016 = (typeof classCode2016 === 'number') ? (LULC_CLASSES[classCode2016] || `Unknown Class (${classCode2016})`) : classCode2016;
+    const className2026 = (typeof classCode2026 === 'number') ? (LULC_CLASSES[classCode2026] || `Unknown Class (${classCode2026})`) : classCode2026;
+
+    // Update the HTML interface elements directly using your target IDs
+    document.getElementById("value_3").innerHTML = className2016;
+    document.getElementById("value_4").innerHTML = className2026;
+
+    // 5. Display the Categorical Transition Strategy
+    const changeElement = document.getElementById("value_5");
+    
+    if (typeof classCode2016 === 'number' && typeof classCode2026 === 'number') {
+        if (classCode2016 === classCode2026) {
+            changeElement.innerHTML = `<span style="color: gray; font-weight: 500;">No Change</span>`;
+        } else {
+            changeElement.innerHTML = `<span style="color: #d9534f; font-weight: bold;">${className2016} → ${className2026}</span>`;
+        }
+    } else {
+        changeElement.innerHTML = "-";
+    }
+});
+
+// FIXED: Helper extraction function extracting from Band 0 index matrix array
+function getLULCValue(raster, latlng) {
+    if (!raster) return "Loading...";
+    
+    const x = Math.floor((latlng.lng - raster.xmin) / raster.pixelWidth);
+    const y = Math.floor((raster.ymax - latlng.lat) / raster.pixelHeight);
+
+    if (x < 0 || y < 0 || x >= raster.width || y >= raster.height) {
+        return "Outside Raster";
+    }
+    
+    // CRITICAL FIX: georaster formats arrays as [band][y][x]. Band 0 handles single-band datasets.
+    if (!raster.values || !raster.values[0] || !raster.values[0][y]) return "No Data";
+    
+    const rawVal = raster.values[0][y][x];
+    
+    if (rawVal === raster.noDataValue || rawVal === null || rawVal === undefined) {
+        return "No Data";
+    }
+    
+    return Math.round(rawVal); // Returns clean single class index integer (e.g. 1, 2, 3)
+}
+
 
 
