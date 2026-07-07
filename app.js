@@ -121,7 +121,7 @@ const LULC_CLASSES = {
 };
 
 // 2. Global Variables for LULC Rasters
-let lulcRaster2017 = null;
+let lulcRaster2016 = null;
 let lulcRaster2026 = null;
 
 // Reusable loader optimized for integer LULC files
@@ -156,7 +156,7 @@ function loadLULCLayer(filePath, isPrimaryForBounds, successCallback) {
 
 // 3. Load your LULC TIF Files (Ensure correct paths)
 loadLULCLayer("Data/Image_class_2016_catchment.tif", true, (raster) => {
-    lulcRaster2017 = raster;
+    lulcRaster2016 = raster;
 });
 
 loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif.tif", false, (raster) => {
@@ -169,28 +169,28 @@ map.on("click", function(e) {
     document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
 
     // Retrieve raw integer pixel values
-    const classCode2017 = getLULCValue(lulcRaster2017, e.latlng);
+    const classCode2016 = getLULCValue(lulcRaster2016, e.latlng);
     const classCode2026 = getLULCValue(lulcRaster2026, e.latlng);
 
     // Map integers to human-readable names using the LULC_CLASSES object
-    const className2017 = LULC_CLASSES[classCode2017] || `Unknown Class (${classCode2017})`;
+    const className2016 = LULC_CLASSES[classCode2016] || `Unknown Class (${classCode2016})`;
     const className2026 = LULC_CLASSES[classCode2026] || `Unknown Class (${classCode2026})`;
 
     // Handle display scenarios (If outside bounds or loading)
-    const display2017 = (typeof classCode2017 === 'number') ? className2017 : classCode2017;
+    const display2016 = (typeof classCode2016 === 'number') ? className2017 : classCode2016;
     const display2026 = (typeof classCode2026 === 'number') ? className2026 : classCode2026;
 
-    document.getElementById("value_3").innerHTML = display2017;
+    document.getElementById("value_3").innerHTML = display2016;
     document.getElementById("value_4").innerHTML = display2026;
 
     // 5. Display the Categorical Transition Strategy
     const changeElement = document.getElementById("value_5");
     
-    if (typeof classCode2017 === 'number' && typeof classCode2026 === 'number') {
-        if (classCode2017 === classCode2026) {
+    if (typeof classCode2016 === 'number' && typeof classCode2026 === 'number') {
+        if (classCode2016 === classCode2026) {
             changeElement.innerHTML = `<span style="color: gray;">No Change</span>`;
         } else {
-            changeElement.innerHTML = `<span style="color: #d9534f; font-weight: bold;">${className2017} → ${className2026}</span>`;
+            changeElement.innerHTML = `<span style="color: #d9534f; font-weight: bold;">${className2016} → ${className2026}</span>`;
         }
     } else {
         changeElement.innerHTML = "-";
