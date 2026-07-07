@@ -77,22 +77,7 @@ td{
 
 }
 
-.leaflet-control-layers {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 10px !important;
-    background-color: rgba(255, 255, 255, 0.95);
-}
 
-.leaflet-control-layers-overlays label {
-    margin-bottom: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
 
 .leaflet-control-layers-overlays label:last-child {
     margin-bottom: 0;
