@@ -1,5 +1,5 @@
 // 1. Initialize the Leaflet Map
-const map = L.map('map').setView([51.8, -0.8], 10); 
+const map = L.map('map').setView([0, 0], 5); 
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
