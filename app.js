@@ -180,11 +180,11 @@ map.on("click", function(e) {
     const display2017 = (typeof classCode2017 === 'number') ? className2017 : classCode2017;
     const display2026 = (typeof classCode2026 === 'number') ? className2026 : classCode2026;
 
-    document.getElementById("value_1").innerHTML = display2017;
-    document.getElementById("value_2").innerHTML = display2026;
+    document.getElementById("value_3").innerHTML = display2017;
+    document.getElementById("value_4").innerHTML = display2026;
 
     // 5. Display the Categorical Transition Strategy
-    const changeElement = document.getElementById("value_");
+    const changeElement = document.getElementById("value_5");
     
     if (typeof classCode2017 === 'number' && typeof classCode2026 === 'number') {
         if (classCode2017 === classCode2026) {
