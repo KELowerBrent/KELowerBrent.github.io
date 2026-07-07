@@ -109,3 +109,106 @@ function getRasterValue(raster, latlng) {
 function formatDisplayValue(val) {
     return (typeof val === 'number') ? val.toFixed(2) : val;
 }
+
+// 1. Define your LULC Classification Legend Map
+// Adjust these numbers and text strings to match your specific GeoTIFF raster legend
+const LULC_CLASSES = {
+    0: "Unclassified/No Data",
+    1: "Flat Land",
+    2: "Built-up",
+    3: "Waterboidies",
+    4: "Trees/Vegetation"
+};
+
+// 2. Global Variables for LULC Rasters
+let lulcRaster2017 = null;
+let lulcRaster2026 = null;
+
+// Reusable loader optimized for integer LULC files
+function loadLULCLayer(filePath, isPrimaryForBounds, successCallback) {
+    fetch(filePath)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            return response.arrayBuffer();
+        })
+        .then(arrayBuffer => parseGeoraster(arrayBuffer))
+        .then(raster => {
+            console.log(`Parsed LULC Raster: ${filePath}`, raster);
+            
+            const rasterLayer = new GeoRasterLayer({
+                georaster: raster,
+                opacity: 0.8,
+                pixelValuesToColorFn: values => {
+                    // Optional: Custom coloring logic per class can go here if needed
+                    return null; 
+                }
+            });
+            
+            rasterLayer.addTo(map);
+            successCallback(raster);
+
+            if (isPrimaryForBounds) {
+                map.fitBounds(rasterLayer.getBounds());
+            }
+        })
+        .catch(err => console.error(`LULC load error (${filePath}):`, err));
+}
+
+// 3. Load your LULC TIF Files (Ensure correct paths)
+loadLULCLayer("Data/Image_class_2016_catchment.tif", true, (raster) => {
+    lulcRaster2017 = raster;
+});
+
+loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif.tif", false, (raster) => {
+    lulcRaster2026 = raster;
+});
+
+// 4. Unified Map Click Event
+map.on("click", function(e) {
+    document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(6);
+    document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
+
+    // Retrieve raw integer pixel values
+    const classCode2017 = getLULCValue(lulcRaster2017, e.latlng);
+    const classCode2026 = getLULCValue(lulcRaster2026, e.latlng);
+
+    // Map integers to human-readable names using the LULC_CLASSES object
+    const className2017 = LULC_CLASSES[classCode2017] || `Unknown Class (${classCode2017})`;
+    const className2026 = LULC_CLASSES[classCode2026] || `Unknown Class (${classCode2026})`;
+
+    // Handle display scenarios (If outside bounds or loading)
+    const display2017 = (typeof classCode2017 === 'number') ? className2017 : classCode2017;
+    const display2026 = (typeof classCode2026 === 'number') ? className2026 : classCode2026;
+
+    document.getElementById("value_1").innerHTML = display2017;
+    document.getElementById("value_2").innerHTML = display2026;
+
+    // 5. Display the Categorical Transition Strategy
+    const changeElement = document.getElementById("value_");
+    
+    if (typeof classCode2017 === 'number' && typeof classCode2026 === 'number') {
+        if (classCode2017 === classCode2026) {
+            changeElement.innerHTML = `<span style="color: gray;">No Change</span>`;
+        } else {
+            changeElement.innerHTML = `<span style="color: #d9534f; font-weight: bold;">${className2017} → ${className2026}</span>`;
+        }
+    } else {
+        changeElement.innerHTML = "-";
+    }
+});
+
+// Helper extraction function
+function getLULCValue(raster, latlng) {
+    if (!raster) return "Loading...";
+    const x = Math.floor((latlng.lng - raster.xmin) / raster.pixelWidth);
+    const y = Math.floor((raster.ymax - latlng.lat) / raster.pixelHeight);
+
+    if (x < 0 || y < 0 || x >= raster.width || y >= raster.height) {
+        return "Outside Raster";
+    }
+    
+    const rawVal = raster.values[y][x];
+    if (rawVal === raster.noDataValue || rawVal === null) return "No Data";
+    
+    return Math.round(rawVal); // Ensure integer evaluation
+}
