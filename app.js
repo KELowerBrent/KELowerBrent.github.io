@@ -39,7 +39,7 @@ function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
             
             const rasterLayer = new GeoRasterLayer({
                 georaster: raster,
-                opacity: 0.0,
+                opacity: 100.0,
                 resolution: 256 // Improves rendering performance
             });
     rasterLayer.addTo(map);
@@ -162,7 +162,7 @@ function loadLULCLayer(filePath, isPrimaryForBounds, successCallback) {
             
             const rasterLayer = new GeoRasterLayer({
                 georaster: raster,
-                opacity: 0.0,
+                opacity: 100.0,
                 pixelValuesToColorFn: values => {
                     // Optional: Custom coloring logic per class can go here if needed
                     return null; 
