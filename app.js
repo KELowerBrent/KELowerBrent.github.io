@@ -1,4 +1,4 @@
-// Create Map
+This is my JS file. Where are you suggesting to add a colour ramp// Create Map
 
 const map = L.map("map").setView([51.7, -0.8], 15);
 
@@ -16,7 +16,7 @@ let georaster;
 
 // Load GeoTIFF from GitHub repository
 
-fetch("Data/Image_class_2017_catchment.tif")
+fetch("Data/Image_Landsat_2017_LST_catchment.tif")
 
 .then(response=>response.arrayBuffer())
 
