@@ -177,7 +177,7 @@ map.on("click", function(e) {
     const className2026 = LULC_CLASSES[classCode2026] || `Unknown Class (${classCode2026})`;
 
     // Handle display scenarios (If outside bounds or loading)
-    const display2016 = (typeof classCode2016 === 'number') ? className2017 : classCode2016;
+    const display2016 = (typeof classCode2016 === 'number') ? className2016 : classCode2016;
     const display2026 = (typeof classCode2026 === 'number') ? className2026 : classCode2026;
 
     document.getElementById("value_3").innerHTML = display2016;
