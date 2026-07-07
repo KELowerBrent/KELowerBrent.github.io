@@ -159,7 +159,7 @@ loadLULCLayer("Data/Image_class_2016_catchment.tif", true, (raster) => {
     lulcRaster2016 = raster;
 });
 
-loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif.tif", false, (raster) => {
+loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif", false, (raster) => {
     lulcRaster2026 = raster;
 });
 
