@@ -51,7 +51,7 @@ loadRasterLayer("Data/Image_Landsat_2017_LST_catchment.tif", true, (raster) => {
     georaster2017 = raster;
 });
 
-loadRasterLayer("Data/Image_Landsat_2026_LST_catchmentwgs84.tif", false, (raster) => {
+loadRasterLayer("Data/Image_Landsat_2026_LST_catchment_wgs84.tif", false, (raster) => {
     georaster2026 = raster;
 });
 
