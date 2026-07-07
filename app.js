@@ -165,8 +165,8 @@ loadLULCLayer("Data/Image_class_2026_catchment_wgs84.tif.tif", false, (raster) =
 
 // 4. Unified Map Click Event
 map.on("click", function(e) {
-    document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(6);
-    document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
+    // document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(6);
+    // document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
 
     // Retrieve raw integer pixel values
     const classCode2016 = getLULCValue(lulcRaster2016, e.latlng);
