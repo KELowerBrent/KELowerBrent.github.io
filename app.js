@@ -14,26 +14,6 @@ L.tileLayer(
 let rasterLayer;
 let georaster;
 
-function getLSTColor(value){
-
-    return chroma
-        .scale([
-            "#313695",
-            "#4575b4",
-            "#74add1",
-            "#abd9e9",
-            "#fee090",
-            "#fdae61",
-            "#f46d43",
-            "#d73027"
-        ])
-        .domain([
-            georaster.mins[0],
-            georaster.maxs[0]
-        ])(value)
-        .hex();
-
-}
 // Load GeoTIFF from GitHub repository
 
 fetch("Data/Image_Landsat_2017_LST_catchment.tif")
@@ -44,24 +24,15 @@ fetch("Data/Image_Landsat_2017_LST_catchment.tif")
 
 .then(raster=>{
 
-  rasterLayer = new GeoRasterLayer({
+    georaster=raster;
 
-    georaster: raster,
+    rasterLayer=new GeoRasterLayer({
 
-     // Add these lines
-    console.log(georaster);
-    console.log("Min:", georaster.mins);
-    console.log("Max:", georaster.maxs);
-    console.log("NoData:", georaster.noDataValue);
-
-    rasterLayer = new GeoRasterLayer({
-
-        georaster: georaster,
-        opacity: 0.7
+        georaster:georaster,
+        opacity:0.7
 
     });
 
-});
     rasterLayer.addTo(map);
 
     map.fitBounds(rasterLayer.getBounds());
