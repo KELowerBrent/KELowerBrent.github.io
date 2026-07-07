@@ -39,22 +39,12 @@ function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
             
             const rasterLayer = new GeoRasterLayer({
                 georaster: raster,
-                opacity: 0.8,
+                opacity: 0.7,
                 resolution: 256 // Improves rendering performance
             });
     rasterLayer.addTo(map);
-    //         library(terra)
-    //         library(leaflet)
-
-    //         r <- rast("Data/Image_Landsat_2017_LST_catchment.tif")
-    //         pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(r),
-    //           na.color = "transparent")
-
-            leaflet() %>% addTiles() %>%
-              addRasterImage(r, colors = pal, opacity = 0.8) %>%
-              addLegend(pal = pal, values = values(r),
-                title = "Surface temp")
             
+   
 
             // Save raster object globally for click calculations
             successCallback(raster);
