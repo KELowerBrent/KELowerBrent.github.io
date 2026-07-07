@@ -39,7 +39,6 @@ function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
             
             const rasterLayer = new GeoRasterLayer({
                 georaster: raster,
-                colors: pal
                 opacity: 0.0,
                 resolution: 256 // Improves rendering performance
             });
