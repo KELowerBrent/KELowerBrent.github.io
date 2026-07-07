@@ -8,17 +8,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // 2. Global Variables for Data and Calculation Tracking
 let georaster2017 = null;
 let georaster2026 = null;
-let lulcRaster2016 = null;
-let lulcRaster2026 = null;
+// let lulcRaster2016 = null;
+// let lulcRaster2026 = null;
 
-// 3. Layer Switcher Dictionaries
-const baseMaps = {
-    "OpenStreetMap": osmBase
-};
+// // 3. Layer Switcher Dictionaries
+// const baseMaps = {
+//     "OpenStreetMap": osmBase
+// };
 
 // This tracking object holds references to layers shown inside the UI switcher box
-const overlayMaps = {};
-const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+// const overlayMaps = {};
+// const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
 
 
 
