@@ -1,109 +1,202 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
 }
 
-html,
-body{
-    width:100%;
-    height:100%;
+body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* HEADER */
 #header {
   height: 50px;
-  background: #A5D6A7; 
-    color: #0047AB;
+  background: #0F7776;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  font-size: clamp(18px, 4vw, 26px); /* Fluid typography: shrinks on mobile, grows on desktop */
+  font-size: 30px;
   font-weight: bold;
   flex-shrink: 0;
-  padding: 0 15px;
 }
 
 #download {
   position: absolute;
   left: 10px;
-  height: 36px; /* Reduced from 50px to prevent overflow clipping within a 50px header */
-  top: 7px;
-}
-#container{
-
-    display:flex;
-    width:100%;
-    height:100vh;
-
+  height: 50px;
 }
 
-#map{
-
-    width:50%;
-    height:100%;
-
+/* MAIN LAYOUT */
+#container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
-#info{
-
-    width:50%;
-    padding:25px;
-    overflow:auto;
-    background:#f4f4f4;
-
+/* MAP SIDE */
+#map {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  position: relative;
 }
 
-h2{
-
-    margin-bottom:20px;
-
+.leaflet-container {
+  height: 100%;
+  width: 100%;
 }
 
-table{
+/* COORDINATES BOX */
+#coords {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 3px;
+  font-family: monospace;
+}
 
+/* SIDEBAR */
+#sidebar {
+  flex:1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+  background: #aeabab;
+  min-height: 0;
+}
+
+.sidebar-row {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px;
+  background: white;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ddd;
+}
+
+.sidebar-row:last-child {
+  border-bottom: none;
+}
+
+#feature-info {
+  flex: 0.6;
+  overflow-y: auto;
+}
+/* ============================================================ */
+/* ADDED: WEATHER PANEL LAYOUT AND SUBHEADING ALIGNMENT        */
+/* ============================================================ */
+/* #weather-panel {
+  flex: 0.8;
+  display: flex;
+  flex-direction: column;
+}
+
+#weather-panel h4, #borough-panel h4, #ward-panel h4 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.weather-grid {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.weather-status {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.weather-metrics {
+  display: flex;
+  justify-content: space-between;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.weather-metrics p {
+  margin: 0;
+} */
+/* ============================================================ */
+/* #info-panel{
+    padding:15px;
+    background:#f5f5f5;
+    border:1px solid #ccc;
+    margin:10px;
+    font-size:16px;
+}
+
+.chart-box{
+    width:80%;
+    margin:auto;
+}
+`` */
+
+#lst-table{
     width:100%;
     border-collapse:collapse;
-
+    margin-bottom:15px;
 }
 
-
-td{
-
+#lst-table th,
+#lst-table td{
     border:1px solid #ccc;
-    padding:12px;
-
+    padding:6px;
+    font-size:13px;
 }
 
+#lst-table th{
+    background:#0F7776;
+    color:white;
+}
 
-/* 
-.leaflet-control-layers-overlays label:last-child {
-    margin-bottom: 0;
+#lst-table tr:nth-child(even){
+    background:#f5f5f5;
+}
+
+/* #borough-panel {
+  flex: 2;
 } */
 
-/* ======================================================= */
-/* ADDED: LAYER SWITCHER CONTROL FIXES (PASTED AT BOTTOM)  */
-/* ======================================================= */
-.leaflet-control-layers {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 10px !important;
-    background-color: rgba(255, 255, 255, 0.95);
+/* #ward-panel {
+  flex: 2;
+} */
+
+.sidebar-row h3 {
+  margin: 0 0 4px 0;
 }
 
-.leaflet-control-layers-overlays label {
-    margin-bottom: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+/* CHART CONTAINER */
+.chart-wrap {
+  width: 100%;
+  height: calc(100% - 20px);
+  min-height: 0;
+  top: -10px;
+  position: relative;
 }
 
-.leaflet-control-layers-overlays label:last-child {
-    margin-bottom: 0;
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
+/* OPTIONAL SCROLL IF TEXT OVERFLOWS */
+#feature-info {
+  overflow-y: auto;
+}
