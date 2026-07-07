@@ -37,19 +37,19 @@ function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
             
             // Generate the visual Leaflet layer
             
-            // const rasterLayer = new GeoRasterLayer({
-            //     georaster: raster,
-            //     colors: pal
-            //     opacity: 0.7,
-            //     resolution: 256 // Improves rendering performance
-            // });
-    // rasterLayer.addTo(map);
-            library(terra)
-            library(leaflet)
+            const rasterLayer = new GeoRasterLayer({
+                georaster: raster,
+                colors: pal
+                opacity: 0.0,
+                resolution: 256 // Improves rendering performance
+            });
+    rasterLayer.addTo(map);
+    //         library(terra)
+    //         library(leaflet)
 
-            r <- rast("Data/Image_Landsat_2017_LST_catchment.tif")
-            pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(r),
-              na.color = "transparent")
+    //         r <- rast("Data/Image_Landsat_2017_LST_catchment.tif")
+    //         pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(r),
+    //           na.color = "transparent")
 
             leaflet() %>% addTiles() %>%
               addRasterImage(r, colors = pal, opacity = 0.8) %>%
@@ -163,7 +163,7 @@ function loadLULCLayer(filePath, isPrimaryForBounds, successCallback) {
             
             const rasterLayer = new GeoRasterLayer({
                 georaster: raster,
-                opacity: 0.8,
+                opacity: 0.0,
                 pixelValuesToColorFn: values => {
                     // Optional: Custom coloring logic per class can go here if needed
                     return null; 
