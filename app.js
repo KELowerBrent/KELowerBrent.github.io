@@ -54,146 +54,96 @@ L.control.layers(baseMaps, { collapsed: true, position:'bottomleft'}).addTo(map)
 let rasterLayer;
 let georaster;
 
-// Load GeoTIFF from GitHub repository-2017
+// Global variables to hold both rasters
+let georaster2017 = null;
+let georaster2026 = null;
 
+// 1. Load GeoTIFF 2017
 fetch("Data/Image_Landsat_2017_LST_catchment.tif")
-
-.then(response=>response.arrayBuffer())
-
-.then(arrayBuffer=>parseGeoraster(arrayBuffer))
-
-.then(raster=>{
-
-    georaster=raster;
-
-    rasterLayer=new GeoRasterLayer({
-
-        georaster:georaster,
-        opacity:0.7
-
+    .then(response => response.arrayBuffer())
+    .then(arrayBuffer => parseGeoraster(arrayBuffer))
+    .then(raster => {
+        georaster2017 = raster;
+        let rasterLayer = new GeoRasterLayer({ georaster: raster, opacity: 0.7 });
+        rasterLayer.addTo(map);
+        map.fitBounds(rasterLayer.getBounds());
     });
 
-    rasterLayer.addTo(map);
-
-    map.fitBounds(rasterLayer.getBounds());
-
-});
-
-// Mouse Click
-
-map.on("click",function(e){
-
-    document.getElementById("lat").innerHTML=e.latlng.lat.toFixed(3);
-
-    document.getElementById("lng").innerHTML=e.latlng.lng.toFixed(3);
-
-    if(!georaster) return;
-
-    const value=getRasterValue(e.latlng);
-
-    document.getElementById("value_1").innerHTML=value;
-
-});
-
-
-// Read Raster Value
-
-function getRasterValue(latlng){
-
-    const xmin=georaster.xmin;
-    const ymax=georaster.ymax;
-
-    const pixelWidth=georaster.pixelWidth;
-    const pixelHeight=georaster.pixelHeight;
-
-    const x=Math.floor((latlng.lng-xmin)/pixelWidth);
-
-    const y=Math.floor((ymax-latlng.lat)/pixelHeight);
-
-    if(
-        x<0 ||
-        y<0 ||
-        x>=georaster.width ||
-        y>=georaster.height
-    ){
-
-        return "Outside Raster";
-
-    }
-
-    const value=georaster.values[0][y][x];
-
-    return value;
-
-    // Load GeoTIFF from GitHub repository-2026
-
-fetch("Data/Image_Landsat_2026_LST_catchment_wgs84.tif")
-
-.then(response=>response.arrayBuffer())
-
-.then(arrayBuffer=>parseGeoraster(arrayBuffer))
-
-.then(raster=>{
-
-    georaster=raster;
-
-    rasterLayer=new GeoRasterLayer({
-
-        georaster:georaster,
-        opacity:0.7
-
+// 2. Load GeoTIFF 2026
+fetch("Data/Image_Landsat_2026_LST_catchmentwgs84.tif") // Ensure this path matches your 2026 file
+    .then(response => response.arrayBuffer())
+    .then(arrayBuffer => parseGeoraster(arrayBuffer))
+    .then(raster => {
+        georaster2026 = raster;
+        let rasterLayer = new GeoRasterLayer({ georaster: raster, opacity: 0.7 });
+        rasterLayer.addTo(map);
     });
 
-    rasterLayer.addTo(map);
+// Mouse Click Event
+map.on("click", function(e) {
+    document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(3);
+    document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(3);
 
-    map.fitBounds(rasterLayer.getBounds());
+    // Get value for 2017
+    let val2017 = getRasterValue(georaster2017, e.latlng);
+    document.getElementById("value_1").innerHTML = isNaN(val2017) ? val2017 : val2017.toFixed(2);
 
+    // Get value for 2026
+    let val2026 = getRasterValue(georaster2026, e.latlng);
+    document.getElementById("value_2").innerHTML = isNaN(val2026) ? val2026 : val2026.toFixed(2);
+
+    // Calculate and display mathematical difference
+    let diffEl = document.getElementById("value_");
+    if (!isNaN(val2017) && !isNaN(val2026)) {
+        let difference = val2026 - val2017;
+        diffEl.innerHTML = difference.toFixed(2);
+    } else {
+        diffEl.innerHTML = "-";
+    }
 });
 
-// // Mouse Click
+// Reusable Function to Read Raster Value
+function getRasterValue(raster, latlng) {
+    if (!raster) return "Loading...";
 
-// map.on("click",function(e){
+    const xmin = raster.xmin;
+    const ymax = raster.ymax;
+    const pixelWidth = raster.pixelWidth;
+    const pixelHeight = raster.pixelHeight;
 
-//     document.getElementById("lat").innerHTML=e.latlng.lat.toFixed(6);
+    const x = Math.floor((latlng.lng - xmin) / pixelWidth);
+    const y = Math.floor((ymax - latlng.lat) / pixelHeight);
 
-//     document.getElementById("lng").innerHTML=e.latlng.lng.toFixed(6);
-
-//     if(!georaster) return;
-
-//     const value=getRasterValue(e.latlng);
-
-//     document.getElementById("value_2").innerHTML=value;
-
-// });
-
-
-// Read Raster Value
-
-function getRasterValue(latlng){
-
-    const xmin=georaster.xmin;
-    const ymax=georaster.ymax;
-
-    const pixelWidth=georaster.pixelWidth;
-    const pixelHeight=georaster.pixelHeight;
-
-    const x=Math.floor((latlng.lng-xmin)/pixelWidth);
-
-    const y=Math.floor((ymax-latlng.lat)/pixelHeight);
-
-    if(
-        x<0 ||
-        y<0 ||
-        x>=georaster.width ||
-        y>=georaster.height
-    ){
-
+    if (x < 0 || y < 0 || x >= raster.width || y >= raster.height) {
         return "Outside Raster";
-
     }
 
-    const value=georaster.values[0][y][x];
-
-    return value;
-
+    // Assumes single-band raster (band 0). 
+    // If your georaster library structure returns an array, use: raster.values[0][y][x]
+    return raster.values[0][y][x]; 
 }
+
+// Single Unified Mouse Click Event Listener
+map.on("click", function(e) {
+    // 1. Update Coordinates
+    document.getElementById("lat").innerHTML = e.latlng.lat.toFixed(6);
+    document.getElementById("lng").innerHTML = e.latlng.lng.toFixed(6);
+
+    // 2. Safely extract values using the generalized reader function
+    const val2017 = (typeof georaster2017 !== 'undefined') ? getRasterValue(georaster2017, e.latlng) : "Outside";
+    const val2026 = (typeof georaster2026 !== 'undefined') ? getRasterValue(georaster2026, e.latlng) : "Outside";
+
+    // 3. Update the UI Text elements (handles formatting if it is a valid number)
+    document.getElementById("value_1").innerHTML = isNaN(val2017) ? val2017 : val2017.toFixed(2);
+    document.getElementById("value_2").innerHTML = isNaN(val2026) ? val2026 : val2026.toFixed(2);
+
+    // 4. Directly calculate the mathematical difference
+    const diffElement = document.getElementById("value_");
+    
+    if (!isNaN(val2017) && !isNaN(val2026)) {
+        const difference = val2026 - val2017;
+        diffElement.innerHTML = difference.toFixed(2);
+    } else {
+        diffElement.innerHTML = "N/A"; // Display if one or both are outside the raster bounds
+    }
+});
