@@ -1,8 +1,22 @@
-// 1. Initialize the Leaflet Map
-const map = L.map('map').setView([0, 0], 5); 
+// // 1. Initialize the Leaflet Map
+// const map = L.map('map').setView([0, 0], 5); 
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// 1. Initialize the map
+const map = L.map('map').setView([51.505, -0.09], 13);
+
+// 2. Define the geographic bounds where the PNG should sit
+// Format: [[southWestLatitude, southWestLongitude], [northEastLatitude, northEastLongitude]]
+const imageBounds = [[51.49, -0.1], [51.51, -0.08]];
+
+// 3. Add the PNG image overlay
+const imageOverlay = L.imageOverlay('Data/LST_2026.png', imageBounds, {
+    opacity: 0.8,       // Optional: Set image transparency (0.0 to 1.0)
+    alt: 'Map Overlay', // Optional: Accessibility text
+    interactive: true   // Optional: Set to true if you want to attach click events
 }).addTo(map);
 
 // 2. Global Variables for Data and Calculation Tracking
@@ -44,7 +58,6 @@ function loadRasterLayer(filePath, isPrimaryForBounds, successCallback) {
             });
     rasterLayer.addTo(map);
             
-   
 
             // Save raster object globally for click calculations
             successCallback(raster);
