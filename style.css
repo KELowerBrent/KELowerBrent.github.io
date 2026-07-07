@@ -14,8 +14,8 @@ body{
 /* HEADER */
 #header {
   height: 50px;
-  background: #A5D6A7; /* Adjusted from light cyan to match table headers for professional contrast */
-  color: cobalt blue; 
+  background: #A5D6A7; 
+    color: #0047AB;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,14 +42,14 @@ body{
 
 #map{
 
-    width:40%;
+    width:50%;
     height:100%;
 
 }
 
 #info{
 
-    width:60%;
+    width:50%;
     padding:25px;
     overflow:auto;
     background:#f4f4f4;
@@ -75,5 +75,26 @@ td{
     border:1px solid #ccc;
     padding:12px;
 
+}
+
+.leaflet-control-layers {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.leaflet-control-layers-overlays label {
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.leaflet-control-layers-overlays label:last-child {
+    margin-bottom: 0;
 }
 
