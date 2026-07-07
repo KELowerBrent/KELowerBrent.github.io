@@ -48,10 +48,7 @@ var baseMaps = {
 // ];
 
 
-var overlayMaps = {}
-    
-    
-L.control.layers(baseMaps, overlayMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
+L.control.layers(baseMaps, { collapsed: true, position:'bottomleft'}).addTo(map);
 
 
 let rasterLayer;
