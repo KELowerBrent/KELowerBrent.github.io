@@ -46,21 +46,20 @@ fetch("Data/Image_Landsat_2017_LST_catchment.tif")
 
   rasterLayer = new GeoRasterLayer({
 
-    georaster: georaster,
+    georaster: raster,
 
-    opacity: 0.8,
+     // Add these lines
+    console.log(georaster);
+    console.log("Min:", georaster.mins);
+    console.log("Max:", georaster.maxs);
+    console.log("NoData:", georaster.noDataValue);
 
-    pixelValuesToColorFn: function(values){
+    rasterLayer = new GeoRasterLayer({
 
-        const value = values[0];
+        georaster: georaster,
+        opacity: 0.7
 
-        if(value === georaster.noDataValue){
-            return null;
-        }
-
-        return getLSTColor(value);
-
-    }
+    });
 
 });
     rasterLayer.addTo(map);
