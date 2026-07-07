@@ -11,7 +11,7 @@ L.tileLayer(
 {
     maxZoom:19,
     attribution:"© OpenStreetMap"
-});
+}).addTo(map);
 
 var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
@@ -25,13 +25,13 @@ var cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x
 var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: '&copy; Esri'
 })
-//.addTo(map); // Set default active base layer
+
 
 var dark = L.tileLayer(
 'https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png',
 {
     attribution: '&copy; CARTO'
-}).addTo(map);
+});
 
 var baseMaps = {
     "OpenStreetMap": osm,
