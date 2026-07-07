@@ -1,105 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brent River Park</title>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
-<title>Brent River Park</title>
-
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet/dist/leaflet.css"
-/>
-
-<link rel="stylesheet" href="style.css">
-
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
- <div id="header">
+
+    <div id="header">
     <img src="download.png" alt="download" id="download"> 
-    <span id="title" style="font-size: 24px; font-weight: bold;">Brent River Park</span>
+    <span id="title">Brent River Park</span>
     </div>
-<div id="container">
 
-    <div id="map"></div>
+   <div id="container">
+     <div id="map">
+         <div id="coords"></div>
+    </div>
 
-    <div id="info">
-
-        <h2>About the project:</h2>
+<div id="sidebar">
+    <div id="feature-info" class="sidebar-row">
+        <h3>About the project</h3>
         <p>Web-based Geospatial Database to Support 
 Environmental Regeneration in Brent River Park.</p>  
          <a href="Brent_River_Park.pdf" target="_blank">
             Open Project Information
         </a>
-<div class="table-container">
-        <table>
-
-            <tr>
-                <td>Latitude</td>
-                <td id="lat">-</td>
-            </tr>
-
-            <tr>
-                <td>Longitude</td>
-                <td id="lng">-</td>
-            </tr>
-
-            <tr>
-                <td>LST 2017 (°C)</td>
-                <td id="value_1">-</td>
-            </tr>
-
-          <tr>
-                <td>LST 2026 (°C)</td>
-                <td id="value_2">-</td>
-            </tr>
-
-         <tr>
-                <td>Difference (°C)</td>
-                <td id="value_">-</td>
-            </tr>
-         <tr> 
-         </tr>
-        </table>
-    </div>
- 
-<div class="table-container">
-    <table class="horizontal-table">
-        <thead>
-            <tr>
-                <th>LULC 2016 Class</th>
-                <th>LULC 2026 Class</th>
-                <th>Land Cover Information</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td id="value_3" class="lulc-cell">-</td>
-                <td id="value_4" class="lulc-cell">-</td>
-                <td id="value_5" class="transition-cell">-</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-        </tbody>
-    </table>
-</div>
-        </table>
-
     </div>
 
+ <!-- <div id="weather-panel" class="sidebar-row panel">
+                <h4>Live Catchment Weather</h4>
+                <div class="weather-grid">
+                    <p class="weather-status"><strong>Status:</strong> <span id="weather-condition">Click map to sample...</span></p>
+                    <div class="weather-metrics">
+                        <p><strong>Temp:</strong> <span id="temperature">--</span></p>
+                        <p><strong>Humidity:</strong> <span id="humidity">--</span></p>
+                        <p><strong>Wind:</strong> <span id="wind-speed">--</span></p>
+                    </div>
+                </div>
+            </div>  -->
+            
+<div id="lst-panel" class="sidebar-row">
+
+    <h4>LST Change Analysis</h4>
+
+    <table id="lst-table">
+
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+
+        <tr>
+            <td>Latitude</td>
+            <td id="lat-value">--</td>
+        </tr>
+
+        <tr>
+            <td>Longitude</td>
+            <td id="lon-value">--</td>
+        </tr>
+
+        <tr>
+            <td>LST 2016</td>
+            <td id="lst2016-value">--</td>
+        </tr>
+
+        <tr>
+            <td>LST 2026</td>
+            <td id="lst2026-value">--</td>
+        </tr>
+
+        <tr>
+            <td>Difference</td>
+            <td id="lst-difference">--</td>
+        </tr>
+
+        <tr>
+            <td>Status</td>
+            <td id="lst-status">--</td>
+        </tr>
+
+    </table>
+
+    <div class="chart-wrap">
+        <canvas id="lstChart"></canvas>
+    </div>
+
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-<script src="https://unpkg.com/georaster/dist/georaster.browserify.min.js"></script>
+<!-- <div id="borough-panel" class="sidebar-row chart panel">
+    <h4>Borough Information</h4>
+    <div class = "chart-wrap">
+        <canvas id="boroughChart"></canvas>
+    </div>
+</div> -->
 
 
-<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
- <script src="https://unpkg.com/chroma-js@2.4.2/chroma.min.js"></script>
-<script src="app.js"></script>
+<!-- <div id="ward-panel" class="sidebar-row chart panel">
+    <h4>Ward Information</h4>
+    <div class = "chart-wrap">
+        <canvas id="wardChart"></canvas>
+    </div>
+</div>
+</div>  -->
 
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+   
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
 </body>
-</html>
+</html>  
