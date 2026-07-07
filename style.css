@@ -11,6 +11,27 @@ body{
     height:100%;
 }
 
+/* HEADER */
+#header {
+  height: 50px;
+  background: #A5D6A7; /* Adjusted from light cyan to match table headers for professional contrast */
+  color: cobalt blue; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: clamp(18px, 4vw, 26px); /* Fluid typography: shrinks on mobile, grows on desktop */
+  font-weight: bold;
+  flex-shrink: 0;
+  padding: 0 15px;
+}
+
+#download {
+  position: absolute;
+  left: 10px;
+  height: 36px; /* Reduced from 50px to prevent overflow clipping within a 50px header */
+  top: 7px;
+}
 #container{
 
     display:flex;
